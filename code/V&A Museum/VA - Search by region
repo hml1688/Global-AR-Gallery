@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
-<title>V&A artworks · 按大区+年代搜索</title>
+<title>V&amp;A artworks · 按大区+年代搜索</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
   body{font-family:Arial,Helvetica,sans-serif;margin:1rem}
@@ -17,7 +17,7 @@
 </head>
 <body>
 
-<h2>Victoria & Albert Museum · Region search</h2>
+<h2>Victoria &amp; Albert Museum · Region search</h2>
 
 <form id="qry">
   Region:
@@ -26,7 +26,7 @@
     <option>North and central America</option>
     <option>Asia</option>
     <option>Latin America</option>
-    <option>Africa & Oceania</option>
+    <option>Africa &amp; Oceania</option>
   </select>
   From&nbsp;year: <input id="yearFrom" placeholder="1500" required>
   To&nbsp;year:&nbsp;<input id="yearTo"   placeholder="1900" required>
@@ -37,10 +37,8 @@
 <p class="msg" id="msg"></p>
 
 <script>
-/* ---------------- 参数 ---------------- */
-const WANT       = 20;    // 最终卡片数
-const PAGE_SIZE  = 100;   // 每次拉 100 条
-const MAX_COUNTRY= 8;     // 最多尝试 8 个国家
+/* ====== 配置 ====== */
+const WANT = 20, PAGE_SIZE = 100, MAX_COUNTRY = 8;
 
 const REGION_COUNTRIES = {
   "Europe": ["France","Germany","Italy","United Kingdom","England",
@@ -55,115 +53,109 @@ const REGION_COUNTRIES = {
                        "Australia","New Zealand","Fiji","Papua New Guinea"]
 };
 
-/* ---------------- DOM ---------------- */
-const grid=document.getElementById('grid');
-const msg =document.getElementById('msg');
-document.getElementById('qry').addEventListener('submit',e=>{
+/* ====== DOM ====== */
+const grid=document.getElementById('grid'), msg=document.getElementById('msg');
+document.getElementById('qry').addEventListener('submit', e=>{
   e.preventDefault();
-  const a=+yearFrom.value,b=+yearTo.value;
-  if(isNaN(a)||isNaN(b)){alert('请输入有效年份');return;}
-  fetchRegion(regionSel.value,Math.min(a,b),Math.max(a,b));
+  const f=+yearFrom.value, t=+yearTo.value;
+  if(isNaN(f)||isNaN(t)){alert('请输入有效年份');return;}
+  searchRegion(regionSel.value,Math.min(f,t),Math.max(f,t));
 });
 
-/* ---------------- 主流程 ---------------- */
-async function fetchRegion(region,fromY,toY){
+/* ====== 主流程 ====== */
+async function searchRegion(region,fromY,toY){
   grid.innerHTML=''; msg.textContent='Loading…';
   const countries=[...REGION_COUNTRIES[region]];
   shuffle(countries);
 
-  /* --- 第一步：每国取 1 页，并按国分桶 --- */
-  const buckets={};                                    // {country:[records]}
-  const tasks=countries.slice(0,MAX_COUNTRY).map(c=>{
-    const url=buildURL('q_place_name',c,fromY,toY);
-    return fetch(url).then(r=>r.json()).then(j=>{
-      const eligible=(j.records||[]).filter(ok=>ok._images?._primary_thumbnail
-                      && dateOverlap(ok._primaryDate,fromY,toY));
-      if(eligible.length) buckets[c]=eligible;
-    });
-  });
+  /* ---------- 把每国合格藏品放进 buckets ---------- */
+  const buckets={}, tasks=[];
+  for(const c of countries.slice(0,MAX_COUNTRY)){
+    tasks.push(
+      fetch(buildURL('q_place_name',c,fromY,toY))
+       .then(r=>r.json())
+       .then(j=>{
+         const good=(j.records||[]).filter(r=>
+              r._images?._primary_thumbnail &&
+              dateOverlap(r._primaryDate,fromY,toY) &&
+              placeMatches(r,c));         // 关键过滤
+         if(good.length) buckets[c]=good;
+       })
+    );
+  }
   await Promise.all(tasks);
 
-  /* --- 组合：轮询各桶抽卡 --- */
+  /* ---------- 平均轮取 ---------- */
   const selection=[];
   while(selection.length<WANT){
-    let added=false;
-    for(const c of Object.keys(buckets)){
-      if(buckets[c].length){
-        selection.push(buckets[c].pop());
-        added=true;
+    let moved=false;
+    for(const [c,arr] of Object.entries(buckets)){
+      if(arr.length){
+        selection.push(arr.pop());
+        moved=true;
         if(selection.length===WANT) break;
       }
     }
-    if(!added) break;              // 所有桶都空了
+    if(!moved) break;
   }
 
-  /* --- 不足则全文检索补齐 --- */
+  /* ---------- 不够则再从本区剩余里随机补齐 ---------- */
   if(selection.length<WANT){
-    const url=buildURL('q',region,fromY,toY);
-    const extra=(await fetch(url).then(r=>r.json())).records||[];
-    const good=extra.filter(r=>r._images?._primary_thumbnail
-                      && dateOverlap(r._primaryDate,fromY,toY));
-    shuffle(good);
-    for(const r of good){
-      if(selection.find(x=>x.systemNumber===r.systemNumber)) continue;
-      selection.push(r);
-      if(selection.length===WANT) break;
-    }
+    const rest=[];
+    Object.values(buckets).forEach(arr=>rest.push(...arr));
+    shuffle(rest);
+    selection.push(...rest.slice(0,WANT-selection.length));
   }
 
-  if(!selection.length){ msg.textContent='没有符合条件的藏品'; return; }
+  if(!selection.length){
+    msg.textContent=`${region} 区域在 ${fromY}–${toY} 无符合条件藏品`;
+    return;
+  }
 
   shuffle(selection);
   selection.forEach(addCard);
 
-  /* --- 统计信息 --- */
+  /* ---------- 统计展示 ---------- */
   const perCountry={};
   selection.forEach(r=>{
-    const p = originOf(r);
-    perCountry[p]=(perCountry[p]||0)+1;
+    const p=originOf(r); perCountry[p]=(perCountry[p]||0)+1;
   });
-  const summary = Object.entries(perCountry)
-                     .map(([c,n])=>`${c} ${n}件`).join('，');
-
-  msg.textContent=
-    `共抓取 ${selection.length} 件 (${summary}) — 区域：${region} 年代 ${fromY}–${toY}`;
+  const summary=Object.entries(perCountry).map(([c,n])=>`${c} ${n}件`).join('，');
+  msg.textContent=`共显示 ${selection.length} 件 (${summary}) — 区域：${region}，年代 ${fromY}–${toY}`;
 }
 
-/* ---------------- 辅助函数 ---------------- */
+/* ====== 辅助函数 ====== */
 function buildURL(param,val,f,t){
-  return `https://api.vam.ac.uk/v2/objects/search?${param}=`
-       +`${encodeURIComponent(val)}&year_made_from=${f}&year_made_to=${t}`
-       +`&images_exist=1&page_size=${PAGE_SIZE}`;
+  return `https://api.vam.ac.uk/v2/objects/search?${param}=${encodeURIComponent(val)}`
+        +`&year_made_from=${f}&year_made_to=${t}&images_exist=1&page_size=${PAGE_SIZE}`;
 }
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}}
 function dateOverlap(str,f,t){
-  const yrs=(str||'').match(/-?\d{1,4}/g)?.map(Number)||[];
+  const yrs=(str||'').match(/-?\\d{1,4}/g)?.map(Number)||[];
   if(!yrs.length) return true;
-  const mn=Math.min(...yrs),mx=Math.max(...yrs);
-  return !(mx<f||mn>t);
+  const mn=Math.min(...yrs), mx=Math.max(...yrs); return !(mx<f||mn>t);
 }
 function originOf(r){
   return r._primaryPlace || r.placeOfOrigin || r.places?.[0]?.name || 'Unknown';
 }
+function placeMatches(rec,country){
+  const place=originOf(rec).toLowerCase(), kw=country.toLowerCase();
+  return place===kw || place.includes(kw);
+}
 
-/* ---------------- 渲染卡片 ---------------- */
+/* ====== 卡片渲染 ====== */
 function addCard(r){
-  const img=r._images._primary_thumbnail;
-  const big=r._images._iiif_image_base_url;
+  const img=r._images._primary_thumbnail, big=r._images._iiif_image_base_url;
   const title=r._primaryTitle||r.objectType||'(object)';
-  const date=r._primaryDate||'';
-  const maker=r._primaryMaker?.name||'';
-  const place=originOf(r);
-
+  const date=r._primaryDate||'', maker=r._primaryMaker?.name||'', place=originOf(r);
   grid.insertAdjacentHTML('beforeend',`
     <div class="item">
-      <img src="${img}" alt="${title}"
-        ${big?`onclick="window.open('${big}full/768,/0/default.jpg')"`:''}>
+      <img src="${img}" alt="${title}" ${big?`onclick="window.open('${big}full/768,/0/default.jpg')"`:''}>
       <p>
         <strong>Name:</strong> ${title}<br>
         <strong>Date:</strong> ${date}<br>
         <strong>Artist/Maker:</strong> ${maker}<br>
-        <strong>Place of origin:</strong> ${place}
+        <strong>Place&nbsp;of&nbsp;origin:</strong> ${place}
       </p>
     </div>`);
 }
