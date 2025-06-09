@@ -85,27 +85,41 @@ async function searchRegion(region,fromY,toY){
   }
   await Promise.all(tasks);
 
-  /* ---------- 平均轮取 ---------- */
-  const selection=[];
-  while(selection.length<WANT){
-    let moved=false;
-    for(const [c,arr] of Object.entries(buckets)){
-      if(arr.length){
-        selection.push(arr.pop());
-        moved=true;
-        if(selection.length===WANT) break;
-      }
-    }
-    if(!moved) break;
-  }
+/* --- 轮询各桶平均取卡 --- */
+const selection=[];
+const seen = new Set();                     // 已选 systemNumber
 
-  /* ---------- 不够则再从本区剩余里随机补齐 ---------- */
-  if(selection.length<WANT){
-    const rest=[];
-    Object.values(buckets).forEach(arr=>rest.push(...arr));
-    shuffle(rest);
-    selection.push(...rest.slice(0,WANT-selection.length));
+while(selection.length < WANT){
+  let moved = false;
+  for(const [c,arr] of Object.entries(buckets)){
+    /* 跳过已经选过的条目 */
+    while(arr.length && seen.has(arr[arr.length-1].systemNumber)){
+      arr.pop();
+    }
+    if(arr.length){
+      const rec = arr.pop();
+      selection.push(rec);
+      seen.add(rec.systemNumber);
+      moved = true;
+      if(selection.length === WANT) break;
+    }
   }
+  if(!moved) break;                         // 所有桶都空或都重复
+}
+
+/* --- 用本区剩余补齐，也同样去重 --- */
+if(selection.length < WANT){
+  const leftovers=[];
+  Object.values(buckets).forEach(arr=>leftovers.push(...arr));
+  shuffle(leftovers);
+  for(const rec of leftovers){
+    if(selection.length === WANT) break;
+    if(seen.has(rec.systemNumber)) continue;
+    selection.push(rec);
+    seen.add(rec.systemNumber);
+  }
+}
+
 
   if(!selection.length){
     msg.textContent=`${region} 区域在 ${fromY}–${toY} 无符合条件藏品`;
