@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <title>V&A artworks · by place & date range</title>
 <style>
   body{font-family:Arial,Helvetica,sans-serif;margin:1rem}
@@ -16,11 +16,11 @@
 </head>
 <body>
 
-<h2>Victoria & Albert Museum · South America</h2>
+<h2>Victoria & Albert Museum · China</h2>
 
 <form id="qry">
-  From year: <input id="yearFrom" placeholder="e.g. 1800" required>
-  To year: <input id="yearTo" placeholder="e.g. 1900" required>
+  From&nbsp;year: <input id="yearFrom" placeholder="1800" required>
+  To&nbsp;year:&nbsp;<input id="yearTo"   placeholder="1900" required>
   <button type="submit">Search</button>
 </form>
 
@@ -28,70 +28,89 @@
 <p class="msg" id="msg"></p>
 
 <script>
-const PLACE = "South America";          // 可改成其他国家或用 id_place
-const SAMPLE_SIZE = 12;         // 随机展示数量
-const PAGE_SIZE   = 100;        // 取回的最大记录数（API 上限 100）
+const PLACE       = 'China';
+const SAMPLE_SIZE = 12;     // how many cards to show
+const PAGE_SIZE   = 100;    // V&A API max is 100
 
 const grid = document.getElementById('grid');
 const msg  = document.getElementById('msg');
 
 document.getElementById('qry').addEventListener('submit', e => {
   e.preventDefault();
-  const fromYear = parseInt(document.getElementById('yearFrom').value, 10);
-  const toYear   = parseInt(document.getElementById('yearTo').value, 10);
-  if (isNaN(fromYear) || isNaN(toYear)) { alert('Please enter valid years'); return; }
-  fetchArtworks(Math.min(fromYear,toYear), Math.max(fromYear,toYear));
+  const f = Number(yearFrom.value), t = Number(yearTo.value);
+  if (isNaN(f) || isNaN(t)) { alert('Enter valid years'); return; }
+  fetchArtworks(Math.min(f,t), Math.max(f,t));
 });
 
 async function fetchArtworks(fromY, toY){
   grid.innerHTML = '';
   msg.textContent = 'Loading…';
 
-  const endpoint = `https://api.vam.ac.uk/v2/objects/search?` +
-    `q_place_name=${encodeURIComponent(PLACE)}` +
-    `&year_made_from=${fromY}&year_made_to=${toY}` +
-    `&images_exist=1&page_size=${PAGE_SIZE}`;
+  const endpoint = `https://api.vam.ac.uk/v2/objects/search?`
+    + `q_place_name=${encodeURIComponent(PLACE)}`
+    + `&year_made_from=${fromY}&year_made_to=${toY}`
+    + `&images_exist=1&page_size=${PAGE_SIZE}`;
 
   try{
-    const {records} = await fetch(endpoint).then(r => r.json());
-    const picks = records.sort(() => 0.5 - Math.random()).slice(0, SAMPLE_SIZE);
-    if (!picks.length){ msg.textContent = 'No matching objects.'; return; }
-    picks.forEach(rec => addItem(rec, fromY, toY));
-    msg.textContent = `Showing ${picks.length} random objects from ${fromY}–${toY}.`;
+    const res = await fetch(endpoint).then(r=>r.json());
+    const records   = res.records || [];
+    const totalHits = res.info?.record_count ?? res.info?.result_count ?? records.length;
+
+    /* ---- keep only records WITH thumbnail AND whose date overlaps ---- */
+    const eligible = records.filter(r=>{
+      if(!r._images?._primary_thumbnail) return false;
+      return dateOverlaps(r._primaryDate, fromY, toY);
+    });
+
+    if(!eligible.length){
+      msg.textContent = `0 of ${totalHits} objects have images / dates in range.`;
+      return;
+    }
+
+    /* ---- random sample up to SAMPLE_SIZE ---- */
+    const picks = shuffle(eligible).slice(0, SAMPLE_SIZE);
+    picks.forEach(addItem);
+
+    msg.textContent =
+      `Showing ${picks.length} of ${totalHits} objects from ${fromY}–${toY}.`;
   }catch(err){
     console.error(err);
     msg.textContent = 'Error retrieving data.';
   }
 }
 
-function addItem(rec, fromY, toY){
-  const img   = rec._images?._primary_thumbnail;
-  const iiif  = rec._images?._iiif_image_base_url;
-  if(!img || !iiif) return;
-
-  // 再做一次日期区间重检，确保 API 返回范围更宽时能过滤
-  if(!dateOverlaps(rec._primaryDate, fromY, toY)) return;
+function addItem(rec){
+  const thumb = rec._images._primary_thumbnail;
+  const iiif  = rec._images._iiif_image_base_url; // may be undefined
 
   const objectType = rec.objectType || rec._primaryObjectName || 'Object';
-  const title      = rec._primaryTitle || objectType;       // ◎ 新增：无标题 → objectType
+  const title      = rec._primaryTitle || objectType;
   const dateStr    = rec._primaryDate || '';
   const maker      = rec._primaryMaker?.name || 'unknown';
 
-  grid.insertAdjacentHTML('beforeend', `
+  grid.insertAdjacentHTML('beforeend',`
     <div class="item">
-      <img src="${img}" alt="${title}"
-           onclick="window.open('${iiif}full/768,/0/default.jpg','_blank')" />
+      <img src="${thumb}" alt="${title}"
+           ${iiif ? `onclick="window.open('${iiif}full/768,/0/default.jpg','_blank')"` : ''}>
       <p><strong>${title}</strong><br>${dateStr}<br><em>${maker}</em></p>
     </div>`);
 }
 
-// true ↔ artwork’s date (单年或范围) 与查询区间有交集
+/* ---------- helpers ---------- */
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
 function dateOverlaps(dateStr, fromY, toY){
   const yrs = (dateStr||'').match(/-?\d{1,4}/g)?.map(Number) || [];
-  if(!yrs.length) return true;                 // 无日期信息则保留
+  if(!yrs.length) return true;                 // unknown date ⇒ keep
   const min = Math.min(...yrs), max = Math.max(...yrs);
   return !(max < fromY || min > toY);
 }
 </script>
 </body>
 </html>
+
