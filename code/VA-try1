@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>V&A artworks · by place & date range</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
   body{font-family:Arial,Helvetica,sans-serif;margin:1rem}
   form{margin-bottom:1rem}
@@ -28,87 +29,103 @@
 <p class="msg" id="msg"></p>
 
 <script>
-const PLACE       = 'China';
-const SAMPLE_SIZE = 12;     // how many cards to show
-const PAGE_SIZE   = 100;    // V&A API max is 100
+const PLACE       = 'China';   // the keyword you’re looking for
+const SAMPLE_SIZE = 20;           // cards to display
+const PAGE_SIZE   = 100;          // V&A API limit is 100
 
 const grid = document.getElementById('grid');
 const msg  = document.getElementById('msg');
 
-document.getElementById('qry').addEventListener('submit', e => {
+document.getElementById('qry').addEventListener('submit', e=>{
   e.preventDefault();
-  const f = Number(yearFrom.value), t = Number(yearTo.value);
-  if (isNaN(f) || isNaN(t)) { alert('Enter valid years'); return; }
-  fetchArtworks(Math.min(f,t), Math.max(f,t));
+  const f = +yearFrom.value, t = +yearTo.value;
+  if(isNaN(f)||isNaN(t)){alert('Enter valid years');return;}
+  runSearch(Math.min(f,t),Math.max(f,t));
 });
 
-async function fetchArtworks(fromY, toY){
-  grid.innerHTML = '';
-  msg.textContent = 'Loading…';
-
-  const endpoint = `https://api.vam.ac.uk/v2/objects/search?`
-    + `q_place_name=${encodeURIComponent(PLACE)}`
-    + `&year_made_from=${fromY}&year_made_to=${toY}`
-    + `&images_exist=1&page_size=${PAGE_SIZE}`;
+async function runSearch(fromY,toY){
+  grid.innerHTML=''; msg.textContent='Loading…';
+  const placeURL = makeURL('q_place_name',PLACE,fromY,toY);
+  const textURL  = makeURL('q',PLACE,fromY,toY);
 
   try{
-    const res = await fetch(endpoint).then(r=>r.json());
-    const records   = res.records || [];
-    const totalHits = res.info?.record_count ?? res.info?.result_count ?? records.length;
+    const [placeJson,textJson] = await Promise.all([
+      fetch(placeURL).then(r=>r.json()),
+      fetch(textURL).then(r=>r.json())
+    ]);
 
-    /* ---- keep only records WITH thumbnail AND whose date overlaps ---- */
-    const eligible = records.filter(r=>{
+    const placeRecs = placeJson.records||[];
+    const textRecs  = textJson.records||[];
+
+    const totalPlace = placeJson.info?.record_count ?? placeRecs.length;
+    const totalText  = textJson.info?.record_count  ?? textRecs.length;
+
+    /* merge, dedupe by systemNumber */
+    const byId = new Map();
+    [...placeRecs,...textRecs].forEach(r=>byId.set(r.systemNumber,r));
+
+    /* filter ↓ thumbnail & date range */
+    const eligible=[...byId.values()].filter(r=>{
       if(!r._images?._primary_thumbnail) return false;
-      return dateOverlaps(r._primaryDate, fromY, toY);
+      return dateOverlaps(r._primaryDate,fromY,toY);
     });
 
     if(!eligible.length){
-      msg.textContent = `0 of ${totalHits} objects have images / dates in range.`;
+      msg.textContent=`0 matching objects (place hit ${totalPlace}, text hit ${totalText}).`;
       return;
     }
 
-    /* ---- random sample up to SAMPLE_SIZE ---- */
-    const picks = shuffle(eligible).slice(0, SAMPLE_SIZE);
-    picks.forEach(addItem);
+    shuffle(eligible).slice(0,SAMPLE_SIZE).forEach(addItem);
 
-    msg.textContent =
-      `Showing ${picks.length} of ${totalHits} objects from ${fromY}–${toY}.`;
+    msg.textContent=
+      `Showing ${Math.min(SAMPLE_SIZE,eligible.length)} of `
+      +`${eligible.length} filtered objects `
+      +`(${totalPlace} matched place-field, ${totalText} matched text).`;
+
   }catch(err){
     console.error(err);
-    msg.textContent = 'Error retrieving data.';
+    msg.textContent='Error retrieving data – see console.';
   }
+}
+
+function makeURL(param,keyword,from,to){
+  return `https://api.vam.ac.uk/v2/objects/search?${param}=${encodeURIComponent(keyword)}`
+       +`&year_made_from=${from}&year_made_to=${to}`
+       +`&images_exist=1&page_size=${PAGE_SIZE}`;
 }
 
 function addItem(rec){
   const thumb = rec._images._primary_thumbnail;
-  const iiif  = rec._images._iiif_image_base_url; // may be undefined
+  const iiif  = rec._images._iiif_image_base_url;   // may be undefined
 
-  const objectType = rec.objectType || rec._primaryObjectName || 'Object';
-  const title      = rec._primaryTitle || objectType;
-  const dateStr    = rec._primaryDate || '';
-  const maker      = rec._primaryMaker?.name || 'unknown';
+  /* ---- text fields ---- */
+  const objectType = rec.objectType || rec._primaryObjectName || '';
+  const title      = rec._primaryTitle || objectType || '(object)';
+  const dateStr    = rec._primaryDate  || '';
+  const maker      = rec._primaryMaker?.name || '';
 
-  grid.insertAdjacentHTML('beforeend',`
+  grid.insertAdjacentHTML('beforeend', `
     <div class="item">
       <img src="${thumb}" alt="${title}"
            ${iiif ? `onclick="window.open('${iiif}full/768,/0/default.jpg','_blank')"` : ''}>
-      <p><strong>${title}</strong><br>${dateStr}<br><em>${maker}</em></p>
+      <p>
+        <strong>Name:</strong> ${title}<br>
+        <strong>Date:</strong> ${dateStr}<br>
+        <strong>Artist/Maker:</strong> ${maker}<br>
+      </p>
     </div>`);
 }
 
+
+
+
 /* ---------- helpers ---------- */
-function shuffle(a){
-  for(let i=a.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [a[i],a[j]]=[a[j],a[i]];
-  }
-  return a;
-}
-function dateOverlaps(dateStr, fromY, toY){
-  const yrs = (dateStr||'').match(/-?\d{1,4}/g)?.map(Number) || [];
-  if(!yrs.length) return true;                 // unknown date ⇒ keep
-  const min = Math.min(...yrs), max = Math.max(...yrs);
-  return !(max < fromY || min > toY);
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()* (i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
+function dateOverlaps(str,f,t){
+  const yrs=(str||'').match(/-?\d{1,4}/g)?.map(Number)||[];
+  if(!yrs.length) return true;
+  const mn=Math.min(...yrs), mx=Math.max(...yrs);
+  return !(mx<f||mn>t);
 }
 </script>
 </body>
