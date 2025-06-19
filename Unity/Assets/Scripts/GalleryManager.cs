@@ -138,6 +138,7 @@ public class GalleryManager : MonoBehaviour
 
         /* 5️⃣ 结束 */
         if (statusText) statusText.text = "Done";
+        if (statusText) statusText.gameObject.SetActive(false);  //  自动隐藏
     }
 
     /* --------- 工具函数 --------- */
@@ -160,4 +161,17 @@ public class GalleryManager : MonoBehaviour
             (list[i], list[j]) = (list[j], list[i]);
         }
     }
+
+public void ReloadGallery()
+{
+    StopAllCoroutines();
+    if (statusText)
+    {
+        statusText.gameObject.SetActive(true);
+        statusText.text = "Loading…";
+    }
+    StartCoroutine(LoadGallery());   // 重新跑主协程
+}
+
+
 }
