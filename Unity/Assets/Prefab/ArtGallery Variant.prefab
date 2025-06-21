@@ -239,7 +239,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 70
+  m_VersionIndex: 73
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -483,7 +483,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 86
+  m_VersionIndex: 89
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -727,7 +727,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 76
+  m_VersionIndex: 79
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -971,7 +971,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 101
+  m_VersionIndex: 104
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -1215,7 +1215,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 110
+  m_VersionIndex: 113
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -1232,7 +1232,7 @@ GameObject:
   - component: {fileID: 2054741067609388932}
   - component: {fileID: 942778626315981189}
   - component: {fileID: 6928188744245160675}
-  - component: {fileID: 812327193213871763}
+  - component: {fileID: 2858805511840219894}
   m_Layer: 0
   m_Name: Canvas_16
   m_TagString: ArtFrame
@@ -1368,12 +1368,12 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 85
+  m_VersionIndex: 88
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
   m_SelectedVertices: 
---- !u!114 &812327193213871763
+--- !u!114 &2858805511840219894
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1399,7 +1399,7 @@ GameObject:
   - component: {fileID: 2770720443662728489}
   - component: {fileID: 2731682742909901674}
   - component: {fileID: 8133622626393477423}
-  - component: {fileID: 3881713681001004316}
+  - component: {fileID: 84007612843976363}
   m_Layer: 0
   m_Name: Canvas_17
   m_TagString: ArtFrame
@@ -1535,12 +1535,12 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 86
+  m_VersionIndex: 89
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
   m_SelectedVertices: 
---- !u!114 &3881713681001004316
+--- !u!114 &84007612843976363
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1566,7 +1566,7 @@ GameObject:
   - component: {fileID: 6838266825025438640}
   - component: {fileID: 6007560171215138389}
   - component: {fileID: 1846487197072076181}
-  - component: {fileID: 4439930505102245413}
+  - component: {fileID: 805902885931847077}
   m_Layer: 0
   m_Name: Canvas_11
   m_TagString: ArtFrame
@@ -1702,12 +1702,12 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 85
+  m_VersionIndex: 88
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
   m_SelectedVertices: 
---- !u!114 &4439930505102245413
+--- !u!114 &805902885931847077
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1733,7 +1733,7 @@ GameObject:
   - component: {fileID: 984737384991872668}
   - component: {fileID: 8923527347814918016}
   - component: {fileID: 6008543339230611091}
-  - component: {fileID: 6205688963571393951}
+  - component: {fileID: 8461115777216965847}
   m_Layer: 0
   m_Name: Canvas_12
   m_TagString: ArtFrame
@@ -1869,12 +1869,12 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 71
+  m_VersionIndex: 74
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
   m_SelectedVertices: 
---- !u!114 &6205688963571393951
+--- !u!114 &8461115777216965847
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1900,7 +1900,7 @@ GameObject:
   - component: {fileID: 4374778032938015897}
   - component: {fileID: 704905749827830362}
   - component: {fileID: 8974984275447513273}
-  - component: {fileID: 7631192228524421906}
+  - component: {fileID: 3882423544663556237}
   m_Layer: 0
   m_Name: Canvas_19
   m_TagString: ArtFrame
@@ -2036,12 +2036,12 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 110
+  m_VersionIndex: 113
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
   m_SelectedVertices: 
---- !u!114 &7631192228524421906
+--- !u!114 &3882423544663556237
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2294,7 +2294,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 80
+  m_VersionIndex: 83
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -2538,7 +2538,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 102
+  m_VersionIndex: 105
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -2782,7 +2782,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 93
+  m_VersionIndex: 96
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -3026,7 +3026,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 77
+  m_VersionIndex: 80
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -3043,7 +3043,7 @@ GameObject:
   - component: {fileID: 7719734477027939807}
   - component: {fileID: 2145219146358680170}
   - component: {fileID: 6577095121262692208}
-  - component: {fileID: 4857288680824630380}
+  - component: {fileID: 5959045019296465549}
   m_Layer: 0
   m_Name: Canvas_18
   m_TagString: ArtFrame
@@ -3179,12 +3179,12 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 102
+  m_VersionIndex: 105
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
   m_SelectedVertices: 
---- !u!114 &4857288680824630380
+--- !u!114 &5959045019296465549
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3210,7 +3210,7 @@ GameObject:
   - component: {fileID: 1531255913478636996}
   - component: {fileID: 272729142520178220}
   - component: {fileID: 6841904013698141964}
-  - component: {fileID: 1706272193839075290}
+  - component: {fileID: 292836686621270921}
   m_Layer: 0
   m_Name: Canvas_1
   m_TagString: ArtFrame
@@ -3346,12 +3346,12 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 93
+  m_VersionIndex: 96
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
   m_SelectedVertices: 
---- !u!114 &1706272193839075290
+--- !u!114 &292836686621270921
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3377,7 +3377,7 @@ GameObject:
   - component: {fileID: 7465622985891480849}
   - component: {fileID: 1902092365073417757}
   - component: {fileID: 1751369216181806608}
-  - component: {fileID: 6302249061851852092}
+  - component: {fileID: 1909578901441431574}
   m_Layer: 0
   m_Name: Canvas_3
   m_TagString: ArtFrame
@@ -3513,12 +3513,12 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 91
+  m_VersionIndex: 94
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
   m_SelectedVertices: 
---- !u!114 &6302249061851852092
+--- !u!114 &1909578901441431574
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3544,7 +3544,7 @@ GameObject:
   - component: {fileID: 6767879069176314518}
   - component: {fileID: 183098234243784853}
   - component: {fileID: 322012592481125420}
-  - component: {fileID: 9018383435870446157}
+  - component: {fileID: 3044166260572710797}
   m_Layer: 0
   m_Name: Canvas_10
   m_TagString: ArtFrame
@@ -3680,12 +3680,12 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 446
+  m_VersionIndex: 449
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
   m_SelectedVertices: 
---- !u!114 &9018383435870446157
+--- !u!114 &3044166260572710797
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3711,7 +3711,7 @@ GameObject:
   - component: {fileID: 2104750106970345605}
   - component: {fileID: 8051478465640211608}
   - component: {fileID: 3795859591365074631}
-  - component: {fileID: 7776844943992359748}
+  - component: {fileID: 5988778967197015625}
   m_Layer: 0
   m_Name: Canvas_8
   m_TagString: ArtFrame
@@ -3847,12 +3847,12 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 80
+  m_VersionIndex: 83
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
   m_SelectedVertices: 
---- !u!114 &7776844943992359748
+--- !u!114 &5988778967197015625
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4105,7 +4105,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 90
+  m_VersionIndex: 93
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -4122,7 +4122,7 @@ GameObject:
   - component: {fileID: 7696454345003266849}
   - component: {fileID: 5585478864381357165}
   - component: {fileID: 854381828379787934}
-  - component: {fileID: 6208768398219752218}
+  - component: {fileID: 1369210305130376963}
   m_Layer: 0
   m_Name: Canvas_20
   m_TagString: ArtFrame
@@ -4258,12 +4258,12 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 95
+  m_VersionIndex: 98
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
   m_SelectedVertices: 
---- !u!114 &6208768398219752218
+--- !u!114 &1369210305130376963
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4516,7 +4516,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 91
+  m_VersionIndex: 94
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -4533,7 +4533,7 @@ GameObject:
   - component: {fileID: 8289498927933193364}
   - component: {fileID: 5689008719399758717}
   - component: {fileID: 4755344622339498186}
-  - component: {fileID: 7124884018035020961}
+  - component: {fileID: 9026186402046760498}
   m_Layer: 0
   m_Name: Canvas_15
   m_TagString: ArtFrame
@@ -4669,12 +4669,12 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 98
+  m_VersionIndex: 101
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
   m_SelectedVertices: 
---- !u!114 &7124884018035020961
+--- !u!114 &9026186402046760498
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -4927,7 +4927,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 71
+  m_VersionIndex: 74
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -5171,7 +5171,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 85
+  m_VersionIndex: 88
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -5188,7 +5188,7 @@ GameObject:
   - component: {fileID: 8245925743490501634}
   - component: {fileID: 6201599171733485540}
   - component: {fileID: 6858865320223760976}
-  - component: {fileID: 7809461873177340557}
+  - component: {fileID: 8335912631813571980}
   m_Layer: 0
   m_Name: Canvas_4
   m_TagString: ArtFrame
@@ -5324,12 +5324,12 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 112
+  m_VersionIndex: 115
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
   m_SelectedVertices: 
---- !u!114 &7809461873177340557
+--- !u!114 &8335912631813571980
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5582,7 +5582,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 85
+  m_VersionIndex: 88
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -5599,7 +5599,7 @@ GameObject:
   - component: {fileID: 7418704602106450853}
   - component: {fileID: 6285501827447449800}
   - component: {fileID: 7989646860519545471}
-  - component: {fileID: 1844472363668151940}
+  - component: {fileID: 1210125025596525068}
   m_Layer: 0
   m_Name: Canvas_2
   m_TagString: ArtFrame
@@ -5735,12 +5735,12 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 112
+  m_VersionIndex: 115
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
   m_SelectedVertices: 
---- !u!114 &1844472363668151940
+--- !u!114 &1210125025596525068
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5766,7 +5766,7 @@ GameObject:
   - component: {fileID: 5028114660965466578}
   - component: {fileID: 5245837394859940830}
   - component: {fileID: 6355237593741116782}
-  - component: {fileID: 3021016528162171086}
+  - component: {fileID: 9172795647875716320}
   m_Layer: 0
   m_Name: Canvas_14
   m_TagString: ArtFrame
@@ -5902,12 +5902,12 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 75
+  m_VersionIndex: 78
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
   m_SelectedVertices: 
---- !u!114 &3021016528162171086
+--- !u!114 &9172795647875716320
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5933,7 +5933,7 @@ GameObject:
   - component: {fileID: 2065701419796648607}
   - component: {fileID: 7066455629325940742}
   - component: {fileID: 5596674407408085432}
-  - component: {fileID: 8309180730456337853}
+  - component: {fileID: 5967816232421217634}
   m_Layer: 0
   m_Name: Canvas_9
   m_TagString: ArtFrame
@@ -6069,12 +6069,12 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 90
+  m_VersionIndex: 93
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
   m_SelectedVertices: 
---- !u!114 &8309180730456337853
+--- !u!114 &5967816232421217634
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -6327,7 +6327,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 112
+  m_VersionIndex: 115
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -6571,7 +6571,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 112
+  m_VersionIndex: 115
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -6588,7 +6588,7 @@ GameObject:
   - component: {fileID: 5220339370986372103}
   - component: {fileID: 4491319275333876158}
   - component: {fileID: 7060744279146976639}
-  - component: {fileID: 3196720725207022252}
+  - component: {fileID: 1915267175982768613}
   m_Layer: 0
   m_Name: Canvas_5
   m_TagString: ArtFrame
@@ -6724,12 +6724,12 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 70
+  m_VersionIndex: 73
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
   m_SelectedVertices: 
---- !u!114 &3196720725207022252
+--- !u!114 &1915267175982768613
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -6755,7 +6755,7 @@ GameObject:
   - component: {fileID: 7845190253189197807}
   - component: {fileID: 6347529716365697530}
   - component: {fileID: 7516420172612757283}
-  - component: {fileID: 3239654108830944554}
+  - component: {fileID: 145930085928686691}
   m_Layer: 0
   m_Name: Canvas_13
   m_TagString: ArtFrame
@@ -6891,12 +6891,12 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 80
+  m_VersionIndex: 83
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
   m_SelectedVertices: 
---- !u!114 &3239654108830944554
+--- !u!114 &145930085928686691
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -6922,7 +6922,7 @@ GameObject:
   - component: {fileID: 3258152655551328512}
   - component: {fileID: 1612130793048036203}
   - component: {fileID: 2665135145093184037}
-  - component: {fileID: 3171042497941455673}
+  - component: {fileID: 7886833419401087351}
   m_Layer: 0
   m_Name: Canvas_7
   m_TagString: ArtFrame
@@ -7058,12 +7058,12 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 101
+  m_VersionIndex: 104
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
   m_SelectedVertices: 
---- !u!114 &3171042497941455673
+--- !u!114 &7886833419401087351
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -7316,7 +7316,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 80
+  m_VersionIndex: 83
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -7560,7 +7560,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 75
+  m_VersionIndex: 78
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -7577,7 +7577,7 @@ GameObject:
   - component: {fileID: 5490390856216579422}
   - component: {fileID: 4985770528656149636}
   - component: {fileID: 1049856088232822653}
-  - component: {fileID: 686018406147562179}
+  - component: {fileID: 5885504409235136591}
   m_Layer: 0
   m_Name: Canvas_6
   m_TagString: ArtFrame
@@ -7713,12 +7713,12 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 76
+  m_VersionIndex: 79
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
   m_SelectedVertices: 
---- !u!114 &686018406147562179
+--- !u!114 &5885504409235136591
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -7971,7 +7971,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 98
+  m_VersionIndex: 101
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -8215,7 +8215,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 95
+  m_VersionIndex: 98
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -9339,7 +9339,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 58
+  m_VersionIndex: 61
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -11908,7 +11908,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 79
+  m_VersionIndex: 82
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []
@@ -12929,7 +12929,7 @@ MonoBehaviour:
   m_PreserveMeshAssetOnDestroy: 0
   assetGuid: 
   m_Mesh: {fileID: 0}
-  m_VersionIndex: 58
+  m_VersionIndex: 61
   m_IsSelectable: 1
   m_SelectedFaces: 
   m_SelectedEdges: []

@@ -111,30 +111,41 @@ public class GalleryManager : MonoBehaviour
             if (!moved) break;   // 全部桶都空
         }
 
-        /* 4️⃣ 下载缩略图并贴到 Canvas */
-        Shuffle(chosen);                     // 再随机打散
+        // 4️⃣ 下载高清图并贴到 Canvas
+Shuffle(chosen);
 
-        int loaded = 0;
-        for (int i = 0; i < frames.Length && i < chosen.Count; i++)
-        {
-            var rec   = chosen[i];
-            string thumb = rec["_images"]["_primary_thumbnail"]!.ToString();
-            string id    = rec["_primaryImageId"]!.ToString();
-            string full  = $"https://framemark.vam.ac.uk/collections/{id}/full/!800,800/0/default.jpg";
+int loaded = 0;
+for (int i = 0; i < frames.Length && i < chosen.Count; i++)
+{
+    var rec = chosen[i];
 
-            UnityWebRequest texReq = UnityWebRequestTexture.GetTexture(thumb);
-            yield return texReq.SendWebRequest();
+    /* ——① 生成高清 URL —— */
+    string url;
+    var iiif = rec["_images"]?["_iiif_image_base_url"]?.ToString();
+    if (!string.IsNullOrEmpty(iiif))
+        url = iiif + "full/!1024,1024/0/default.jpg"; // 1024px  长边
+    else
+        url = rec["_images"]["_primary_thumbnail"]!.ToString(); // 退回缩略图
 
-            if (texReq.result == UnityWebRequest.Result.Success)
-            {
-                Texture tex = DownloadHandlerTexture.GetContent(texReq);
-                frames[i].paintingRenderer.sharedMaterial = new Material(pictureMat);
-                frames[i].SetTexture(tex);
-                frames[i].hiResUrl = full;          // 点击可看大图
-            }
-            loaded++;
-            if (statusText) statusText.text = $"Loaded {loaded}/{Mathf.Min(WANT, chosen.Count)}";
-        }
+    /* ——② 下载 —— */
+    UnityWebRequest texReq = UnityWebRequestTexture.GetTexture(url);
+    yield return texReq.SendWebRequest();
+    if (texReq.result != UnityWebRequest.Result.Success) continue;
+
+    /* ——③ 贴到画框 —— */
+    Texture tex = DownloadHandlerTexture.GetContent(texReq);
+
+    // 每幅图用独立材质，避免同贴一张
+    frames[i].paintingRenderer.sharedMaterial = new Material(pictureMat);
+    frames[i].SetTexture(tex);          // ✔ 让上面新逻辑做信箱
+
+    /* （可选）记录大图 URL */
+    frames[i].hiResUrl = url;           // 若以后想点图放大
+
+    loaded++;
+    if (statusText) statusText.text = $"Loaded {loaded}/{Mathf.Min(WANT,chosen.Count)}";
+}
+
 
         /* 5️⃣ 结束 */
         if (statusText) statusText.text = "Done";
