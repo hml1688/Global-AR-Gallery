@@ -8231,7 +8231,7 @@ PrefabInstance:
     - target: {fileID: 1601414342518855975, guid: eae746d5de404ed4bbf14600a60292cb,
         type: 3}
       propertyPath: m_Name
-      value: EntryPoint
+      value: EntranceAnchor
       objectReference: {fileID: 0}
     - target: {fileID: 1904322943943431716, guid: eae746d5de404ed4bbf14600a60292cb,
         type: 3}
@@ -8322,6 +8322,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Mesh
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 7241578836279413792, guid: eae746d5de404ed4bbf14600a60292cb,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.6
       objectReference: {fileID: 0}
     - target: {fileID: 8147399204324556046, guid: eae746d5de404ed4bbf14600a60292cb,
         type: 3}

@@ -165,12 +165,18 @@ public class GalleryManager : MonoBehaviour
 public void ReloadGallery()
 {
     StopAllCoroutines();
-    if (statusText)
-    {
-        statusText.gameObject.SetActive(true);
-        statusText.text = "Loading…";
-    }
-    StartCoroutine(LoadGallery());   // 重新跑主协程
+    StartCoroutine(WaitAndLoad());   // 等 ArtFrame
+}
+
+IEnumerator WaitAndLoad()
+{
+    if (statusText) { statusText.gameObject.SetActive(true); statusText.text = "Loading…"; }
+
+    // ▶ 每 0.1 秒检查一次，而不是一直卡着
+    while (GameObject.FindGameObjectsWithTag("ArtFrame").Length < 20)
+        yield return new WaitForSeconds(0.1f);
+
+    yield return StartCoroutine(LoadGallery());
 }
 
 
