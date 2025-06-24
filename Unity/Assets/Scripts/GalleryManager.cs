@@ -58,6 +58,10 @@ public class GalleryManager : MonoBehaviour
             yield break;
         }
 
+        // ✅ 解决图片残留问题：刷新前清空 hiTex
+        foreach (var f in frames)
+        f.hiTex = null;
+
         /* 3️⃣ HTML 同款“均衡算法”——为每国抓 1 页再平均抽取 */
         var buckets = new Dictionary<string,List<JToken>>();
         var countries = new List<string>(REGION_COUNTRIES[region]);

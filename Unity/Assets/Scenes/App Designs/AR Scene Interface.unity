@@ -2060,10 +2060,10 @@ GameObject:
   - component: {fileID: 263369783}
   - component: {fileID: 263369782}
   - component: {fileID: 263369781}
-  - component: {fileID: 263369780}
   - component: {fileID: 263369779}
   - component: {fileID: 263369784}
   - component: {fileID: 263369785}
+  - component: {fileID: 263369786}
   m_Layer: 5
   m_Name: InfoPanelCanvas
   m_TagString: Untagged
@@ -2080,26 +2080,9 @@ CanvasGroup:
   m_GameObject: {fileID: 263369778}
   m_Enabled: 1
   m_Alpha: 1
-  m_Interactable: 0
+  m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
---- !u!114 &263369780
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 263369778}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_IgnoreReversedGraphics: 1
-  m_BlockingObjects: 0
-  m_BlockingMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
 --- !u!114 &263369781
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2208,6 +2191,23 @@ MonoBehaviour:
   makerValue: {fileID: 939593142}
   placeValue: {fileID: 616639003}
   loadingHint: {fileID: 681233226}
+--- !u!114 &263369786
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 263369778}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IgnoreReversedGraphics: 1
+  m_BlockingObjects: 0
+  m_BlockingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!43 &277917209
 Mesh:
   m_ObjectHideFlags: 0
@@ -2834,10 +2834,10 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1712633568}
   - {fileID: 312443954}
   - {fileID: 1658971583}
   - {fileID: 681233228}
-  - {fileID: 1712633568}
   m_Father: {fileID: 263369783}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -3490,7 +3490,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &453357387
 RectTransform:
   m_ObjectHideFlags: 0
@@ -11174,6 +11174,58 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1499045795}
   m_CullTransparentMesh: 1
+--- !u!1 &1528811653
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1528811655}
+  - component: {fileID: 1528811654}
+  m_Layer: 0
+  m_Name: closeManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1528811654
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1528811653}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6205a8efe4b547f4c9c2c76fa4a28f0b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  canvasRoot: {fileID: 365546631}
+  img: {fileID: 312443957}
+  fitter: {fileID: 312443956}
+  titleValue: {fileID: 899194705}
+  dateValue: {fileID: 25375124}
+  makerValue: {fileID: 939593142}
+  placeValue: {fileID: 616639003}
+  loadingHint: {fileID: 681233226}
+--- !u!4 &1528811655
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1528811653}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 571.5566, y: 1181.6284, z: -35.997192}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1614577555
 GameObject:
   m_ObjectHideFlags: 0
@@ -11501,7 +11553,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 263369785}
+      - m_Target: {fileID: 1528811654}
         m_TargetAssemblyTypeName: InfoPanel, Assembly-CSharp
         m_MethodName: Hide
         m_Mode: 1
@@ -15746,3 +15798,4 @@ SceneRoots:
   - {fileID: 263369783}
   - {fileID: 2140863745}
   - {fileID: 44661918}
+  - {fileID: 1528811655}

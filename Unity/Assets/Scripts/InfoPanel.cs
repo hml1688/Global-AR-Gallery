@@ -24,7 +24,7 @@ public class InfoPanel : MonoBehaviour
 
         titleValue.text = f.title;
         dateValue.text  = f.date;
-        makerValue.text = f.maker;
+        makerValue.text = string.IsNullOrWhiteSpace(f.maker) ? "Unknown" : f.maker;
         placeValue.text = f.place;
 
         // ☆ 1. 下载（或用缓存）
@@ -54,4 +54,5 @@ public class InfoPanel : MonoBehaviour
     DebugHelper.Show("Close Triggered");
     canvasRoot.SetActive(false);
 }
+
 }
