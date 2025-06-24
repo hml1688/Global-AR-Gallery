@@ -1,10 +1,14 @@
 using UnityEngine;
+using TMPro;   
+using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(Renderer))]
-public class ArtFrame : MonoBehaviour
+public class ArtFrame : MonoBehaviour, IPointerClickHandler
 {
     public Renderer paintingRenderer;           // 留空则取自身
-    [HideInInspector] public string hiResUrl;   // 以后若要点击放大可用
+    [HideInInspector] public string title, date, maker, place;
+    [HideInInspector] public string hiResUrl;
+    [HideInInspector] public Texture hiTex;
 
     void Awake()
 {
@@ -48,5 +52,12 @@ public class ArtFrame : MonoBehaviour
     mat.mainTextureScale  = tiling;
     mat.mainTextureOffset = offset;
 }
+
+    /* ---------- 点击事件：把自己送去 InfoPanel ---------- */
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        DebugHelper.Show($"Clicked {title}");     // ✅ 屏幕显示文字
+        InfoPanel.Show(this);                     // ✅ 弹出信息面板
+    }
 
 }

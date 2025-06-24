@@ -141,6 +141,16 @@ for (int i = 0; i < frames.Length && i < chosen.Count; i++)
 
     /* （可选）记录大图 URL */
     frames[i].hiResUrl = url;           // 若以后想点图放大
+    frames[i].title =
+    !string.IsNullOrEmpty(rec["_primaryTitle"]?.ToString()) ? rec["_primaryTitle"].ToString()
+    : !string.IsNullOrEmpty(rec["objectType"]?.ToString()) ? rec["objectType"].ToString()
+    : !string.IsNullOrEmpty(rec["title"]?.ToString())       ? rec["title"].ToString()
+    : "(object)";
+    frames[i].date  =  rec["_primaryDate"] ?.ToString() ?? "";
+    frames[i].maker =  rec["_primaryMaker"]?["name"]?.ToString() ?? "";
+    frames[i].place =  PlaceMatches(rec,"") ? rec["_primaryPlace"]?.ToString()
+                                        : rec["placeOfOrigin"]?.ToString() ?? "";
+
 
     loaded++;
     if (statusText) statusText.text = $"Loaded {loaded}/{Mathf.Min(WANT,chosen.Count)}";
