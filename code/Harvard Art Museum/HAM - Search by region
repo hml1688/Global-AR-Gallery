@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>Harvard artworks · 按大区+年代搜索 (debug版)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  body{font-family:Arial,Helvetica,sans-serif;margin:1rem}
+  form{margin-bottom:1rem}
+  input,select{width:8rem;margin-right:.6rem;padding:.25rem}
+  button{padding:.35rem .9rem}
+  #grid{display:flex;flex-wrap:wrap;gap:1rem}
+  .item{width:230px;text-align:center}
+  .item img{width:100%;border-radius:6px;cursor:pointer}
+  .msg{margin-top:1rem;font-style:italic}
+
+  /* ------ 调试面板样式 ------ */
+  #dbgToggle{position:fixed;left:0;bottom:0;z-index:99;
+             background:#444;color:#fff;border:none;border-radius:0 4px 0 0;
+             padding:.3rem .7rem;cursor:pointer;font-size:.8rem}
+  #debugPane{position:fixed;left:0;bottom:2rem;width:360px;height:46vh;
+             background:#111;color:#0f0;font-family:monospace;font-size:.75rem;
+             overflow:auto;white-space:pre-wrap;display:none;z-index:98;padding:.5rem}
+</style></head><body>
+
+<h2>Harvard Art Museums · Region search (debug版)</h2>
+
+<form id="qry">
+  Region:
+  <select id="regionSel">
+    <option>Europe</option>
+    <option>North and central America</option>
+    <option>Asia</option>
+    <option>Latin America</option>
+    <option>Africa &amp; Oceania</option>
+  </select>
+  From&nbsp;year: <input id="yearFrom" placeholder="1500" required>
+  To&nbsp;year:&nbsp;<input id="yearTo"   placeholder="1900" required>
+  <button type="submit">Search</button>
+</form>
+
+<div id="grid"></div>
+<p class="msg" id="msg"></p>
+
+<!-- 调试面板 -->
+<button id="dbgToggle">Debug ⇢</button>
+<pre id="debugPane"></pre>
+
+<script>
+/* ====== 基本配置 ====== */
+const APIKEY      = 'd54e083e-a267-40e4-8d55-f1259589be3b';
+const WANT        = 20;
+const PAGE_SIZE   = 100;
+const MAX_COUNTRY = 8;
+const DEBUG       = true;   // 控制是否输出日志
+
+const REGION_COUNTRIES = {
+  "Europe": ["France","Germany","Italy","United Kingdom","England",
+             "Netherlands","Spain","Sweden","Russia"],
+  "North and central America": ["United States","USA","Mexico",
+             "Canada","Guatemala","Cuba"],
+  "Asia": ["China","Japan","India","Korea","Iran",
+           "Turkey","Thailand","Indonesia"],
+  "Latin America": ["Brazil","Argentina","Peru",
+                    "Chile","Colombia","Ecuador","Bolivia"],
+  "Africa & Oceania": ["Nigeria","Egypt","South Africa","Kenya","Ghana",
+                       "Australia","New Zealand","Fiji","Papua New Guinea"]
+};
+
+/* ====== 调试输出 ====== */
+const dbgPane  = document.getElementById('debugPane');
+const dbgBtn   = document.getElementById('dbgToggle');
+dbgBtn.onclick = ()=>{dbgPane.style.display = dbgPane.style.display ? '' : 'block';};
+function log(...args){
+  if(!DEBUG) return;
+  const str = args.map(a=>typeof a==='object'?JSON.stringify(a,null,2):a).join(' ');
+  console.log(...args);
+  dbgPane.textContent += str + '\n';
+}
+
+/* ====== DOM ====== */
+const grid=document.getElementById('grid'), msg=document.getElementById('msg');
+document.getElementById('qry').addEventListener('submit', e=>{
+  e.preventDefault();
+  const f=+yearFrom.value, t=+yearTo.value;
+  if(isNaN(f)||isNaN(t)){alert('请输入有效年份');return;}
+  searchRegion(regionSel.value,Math.min(f,t),Math.max(f,t));
+});
+
+/* ====== 主流程 ====== */
+async function searchRegion(region,fromY,toY){
+  grid.innerHTML=''; msg.textContent='Loading…'; dbgPane.textContent='';
+  log(`=== New search: ${region}, ${fromY}-${toY} ===`);
+
+  const countries=[...REGION_COUNTRIES[region]];
+  shuffle(countries);
+
+  const buckets={}, tasks=[];
+  for(const c of countries.slice(0,MAX_COUNTRY)){
+    tasks.push(
+      (async ()=>{
+        const placeId = await getPlaceId(c);
+        if(!placeId){log(`No placeId for ${c}`);return;}
+        const url = buildObjectURL(placeId,fromY,toY);
+        try{
+          log(`Fetching objects for ${c} (placeId ${placeId})\n${url}`);
+          const j = await fetch(url).then(r=>{
+            log(`${c} → HTTP ${r.status}`);
+            return r.json();
+          });
+          log(`${c} totalrecords=${j.info?.totalrecords||0}`);
+          const good=(j.records||[]).filter(r=>r.primaryimageurl);
+          if(good.length) buckets[c]=good;
+          log(`${c} kept ${good.length} with images`);
+        }catch(err){
+          log(`ERROR for ${c}`,err);
+        }
+      })()
+    );
+  }
+  await Promise.all(tasks);
+
+  /* --- 均匀取样每桶 --- */
+  const selection=[], seen=new Set();
+  while(selection.length<WANT){
+    let moved=false;
+    for(const arr of Object.values(buckets)){
+      while(arr?.length && seen.has(arr[arr.length-1].id)) arr.pop();
+      if(arr?.length){
+        const rec=arr.pop();
+        selection.push(rec); seen.add(rec.id); moved=true;
+        if(selection.length===WANT) break;
+      }
+    }
+    if(!moved) break;
+  }
+  /* --- 剩余随机补齐 --- */
+  if(selection.length<WANT){
+    const leftovers=[]; Object.values(buckets).forEach(a=>leftovers.push(...a));
+    shuffle(leftovers);
+    for(const rec of leftovers){
+      if(selection.length===WANT) break;
+      if(seen.has(rec.id)) continue;
+      selection.push(rec); seen.add(rec.id);
+    }
+  }
+
+  if(!selection.length){
+    msg.textContent=`${region} 区域在 ${fromY}–${toY} 无符合条件藏品`;
+    return;
+  }
+
+  shuffle(selection);
+  selection.forEach(addCard);
+
+  /* --- 汇总 --- */
+  const perCountry={};
+  selection.forEach(r=>{
+    const p=originOf(r); perCountry[p]=(perCountry[p]||0)+1;
+  });
+  const summary=Object.entries(perCountry).map(([c,n])=>`${c} ${n}件`).join('，');
+  msg.textContent=`共显示 ${selection.length} 件 (${summary}) — 区域：${region}，年代 ${fromY}–${toY}`;
+}
+
+/* ====== 子函数 ====== */
+async function getPlaceId(country){
+  const url=`https://api.harvardartmuseums.org/place?apikey=${APIKEY}&size=1&q=${encodeURIComponent(country)}`;
+  try{
+    log(`Fetching placeId for ${country}\n${url}`);
+    const j = await fetch(url).then(r=>r.json());
+    const id = j.records?.[0]?.id;
+    log(`placeId for ${country} = ${id}`);
+    return id;
+  }catch(e){
+    log(`placeId fetch error for ${country}`,e);
+    return null;
+  }
+}
+
+function buildObjectURL(placeId,f,t){
+  const fields = 'id,title,dated,people,place,places,primaryimageurl,images,iiifbaseuri,datebegin,dateend';
+  return `https://api.harvardartmuseums.org/object?apikey=${APIKEY}`
+       +`&place=${placeId}&fromdate=${f}&todate=${t}&hasimage=1&size=${PAGE_SIZE}&fields=${fields}`;
+}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}}
+function originOf(r){return r.place || r.places?.[0]?.displayname || 'Unknown';}
+
+/* ====== 卡片渲染 ====== */
+function addCard(r){
+  const img    = r.primaryimageurl || r.images?.[0]?.baseimageurl,
+        iiif   = r.images?.[0]?.iiifbaseuri,
+        title  = r.title || '(object)',
+        date   = r.dated || '',
+        maker  = r.people?.[0]?.displayname || '',
+        place  = originOf(r);
+  grid.insertAdjacentHTML('beforeend',`
+    <div class="item">
+      <img src="${img}" alt="${title}" ${iiif?`onclick="window.open('${iiif}/full/768,/0/default.jpg')"`:''}>
+      <p>
+        <strong>Name:</strong> ${title}<br>
+        <strong>Date:</strong> ${date}<br>
+        <strong>Artist/Maker:</strong> ${maker}<br>
+        <strong>Place&nbsp;of&nbsp;origin:</strong> ${place}
+      </p>
+    </div>`);
+}
+</script>
+</body>
+</html>
