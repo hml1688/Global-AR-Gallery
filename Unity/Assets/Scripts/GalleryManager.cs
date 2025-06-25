@@ -62,7 +62,7 @@ public class GalleryManager : MonoBehaviour
         foreach (var f in frames)
         f.hiTex = null;
 
-        /* 3️⃣ HTML 同款“均衡算法”——为每国抓 1 页再平均抽取 */
+        /* 3️⃣ “均衡算法”——为每国抓 1 页再平均抽取 */
         var buckets = new Dictionary<string,List<JToken>>();
         var countries = new List<string>(REGION_COUNTRIES[region]);
         Shuffle(countries);
