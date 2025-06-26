@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
-<title>Harvard artworks · 按大区+年代搜索 (debug版)</title>
+<title>Harvard artworks · 区域+年代搜索</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
   body{font-family:Arial,Helvetica,sans-serif;margin:1rem}
@@ -13,17 +13,9 @@
   .item{width:230px;text-align:center}
   .item img{width:100%;border-radius:6px;cursor:pointer}
   .msg{margin-top:1rem;font-style:italic}
-
-  /* ------ 调试面板样式 ------ */
-  #dbgToggle{position:fixed;left:0;bottom:0;z-index:99;
-             background:#444;color:#fff;border:none;border-radius:0 4px 0 0;
-             padding:.3rem .7rem;cursor:pointer;font-size:.8rem}
-  #debugPane{position:fixed;left:0;bottom:2rem;width:360px;height:46vh;
-             background:#111;color:#0f0;font-family:monospace;font-size:.75rem;
-             overflow:auto;white-space:pre-wrap;display:none;z-index:98;padding:.5rem}
 </style></head><body>
 
-<h2>Harvard Art Museums · Region search (debug版)</h2>
+<h2>Harvard Art Museums · Region search</h2>
 
 <form id="qry">
   Region:
@@ -34,165 +26,166 @@
     <option>Latin America</option>
     <option>Africa &amp; Oceania</option>
   </select>
-  From&nbsp;year: <input id="yearFrom" placeholder="1500" required>
-  To&nbsp;year:&nbsp;<input id="yearTo"   placeholder="1900" required>
+  From&nbsp;year: <input id="yearFrom" placeholder="-800" required>
+  To&nbsp;year:&nbsp;<input id="yearTo"   placeholder="1200" required>
   <button type="submit">Search</button>
 </form>
 
 <div id="grid"></div>
 <p class="msg" id="msg"></p>
 
-<!-- 调试面板 -->
-<button id="dbgToggle">Debug ⇢</button>
-<pre id="debugPane"></pre>
-
 <script>
-/* ====== 基本配置 ====== */
-const APIKEY      = 'd54e083e-a267-40e4-8d55-f1259589be3b';
+/* ======= 配置 ======= */
+const APIKEY      = 'd54e083e-a267-40e4-8d55-f1259589be3b';   // ← 换成你的 key
 const WANT        = 20;
-const PAGE_SIZE   = 100;
+const BATCH_SIZE  = 100;
+const MAX_BATCHES = 5;
 const MAX_COUNTRY = 8;
-const DEBUG       = true;   // 控制是否输出日志
 
-const REGION_COUNTRIES = {
-  "Europe": ["France","Germany","Italy","United Kingdom","England",
-             "Netherlands","Spain","Sweden","Russia"],
-  "North and central America": ["United States","USA","Mexico",
-             "Canada","Guatemala","Cuba"],
-  "Asia": ["China","Japan","India","Korea","Iran",
-           "Turkey","Thailand","Indonesia"],
-  "Latin America": ["Brazil","Argentina","Peru",
-                    "Chile","Colombia","Ecuador","Bolivia"],
-  "Africa & Oceania": ["Nigeria","Egypt","South Africa","Kenya","Ghana",
-                       "Australia","New Zealand","Fiji","Papua New Guinea"]
+const REGION = {
+  "Europe": ["France","Germany","Italy","United Kingdom","England","Netherlands","Spain","Sweden","Russia"],
+  "North and central America": ["United States","USA","Mexico","Canada","Guatemala","Cuba"],
+  "Asia": ["China","Japan","India","Korea","Iran","Turkey","Thailand","Indonesia"],
+  "Latin America": ["Brazil","Argentina","Peru","Chile","Colombia","Ecuador","Bolivia"],
+  "Africa & Oceania": ["Nigeria","Egypt","South Africa","Kenya","Ghana","Australia","New Zealand","Fiji","Papua New Guinea"]
 };
 
-/* ====== 调试输出 ====== */
-const dbgPane  = document.getElementById('debugPane');
-const dbgBtn   = document.getElementById('dbgToggle');
-dbgBtn.onclick = ()=>{dbgPane.style.display = dbgPane.style.display ? '' : 'block';};
-function log(...args){
-  if(!DEBUG) return;
-  const str = args.map(a=>typeof a==='object'?JSON.stringify(a,null,2):a).join(' ');
-  console.log(...args);
-  dbgPane.textContent += str + '\n';
-}
-
-/* ====== DOM ====== */
+/* ======= DOM ======= */
 const grid=document.getElementById('grid'), msg=document.getElementById('msg');
-document.getElementById('qry').addEventListener('submit', e=>{
+document.getElementById('qry').addEventListener('submit',e=>{
   e.preventDefault();
   const f=+yearFrom.value, t=+yearTo.value;
   if(isNaN(f)||isNaN(t)){alert('请输入有效年份');return;}
-  searchRegion(regionSel.value,Math.min(f,t),Math.max(f,t));
+  run(regionSel.value, Math.min(f,t), Math.max(f,t));
 });
 
-/* ====== 主流程 ====== */
-async function searchRegion(region,fromY,toY){
-  grid.innerHTML=''; msg.textContent='Loading…'; dbgPane.textContent='';
-  log(`=== New search: ${region}, ${fromY}-${toY} ===`);
+/* ======= 主流程 ======= */
+async function run(region, fromY, toY){
+  grid.innerHTML=''; msg.textContent='Loading…';
+  const countries=[...REGION[region]]; shuffle(countries);
 
-  const countries=[...REGION_COUNTRIES[region]];
-  shuffle(countries);
-
-  const buckets={}, tasks=[];
+  const buckets={}, jobs=[];
   for(const c of countries.slice(0,MAX_COUNTRY)){
-    tasks.push(
-      (async ()=>{
-        const placeId = await getPlaceId(c);
-        if(!placeId){log(`No placeId for ${c}`);return;}
-        const url = buildObjectURL(placeId,fromY,toY);
-        try{
-          log(`Fetching objects for ${c} (placeId ${placeId})\n${url}`);
-          const j = await fetch(url).then(r=>{
-            log(`${c} → HTTP ${r.status}`);
-            return r.json();
-          });
-          log(`${c} totalrecords=${j.info?.totalrecords||0}`);
-          const good=(j.records||[]).filter(r=>r.primaryimageurl);
-          if(good.length) buckets[c]=good;
-          log(`${c} kept ${good.length} with images`);
-        }catch(err){
-          log(`ERROR for ${c}`,err);
-        }
-      })()
-    );
+    jobs.push(loadCountry(c,fromY,toY).then(arr=>{if(arr.length)buckets[c]=arr;}));
   }
-  await Promise.all(tasks);
+  await Promise.all(jobs);
 
-  /* --- 均匀取样每桶 --- */
-  const selection=[], seen=new Set();
-  while(selection.length<WANT){
+  /* —— 轮询平均抽取 —— */
+  const picked=[], seen=new Set();
+  while(picked.length<WANT){
     let moved=false;
     for(const arr of Object.values(buckets)){
-      while(arr?.length && seen.has(arr[arr.length-1].id)) arr.pop();
-      if(arr?.length){
-        const rec=arr.pop();
-        selection.push(rec); seen.add(rec.id); moved=true;
-        if(selection.length===WANT) break;
+      while(arr.length && seen.has(arr.at(-1).id)) arr.pop();
+      if(arr.length){
+        picked.push(arr.pop()); seen.add(picked.at(-1).id); moved=true;
+        if(picked.length===WANT) break;
       }
     }
     if(!moved) break;
   }
-  /* --- 剩余随机补齐 --- */
-  if(selection.length<WANT){
-    const leftovers=[]; Object.values(buckets).forEach(a=>leftovers.push(...a));
-    shuffle(leftovers);
-    for(const rec of leftovers){
-      if(selection.length===WANT) break;
-      if(seen.has(rec.id)) continue;
-      selection.push(rec); seen.add(rec.id);
-    }
+  if(picked.length<WANT){
+    const rest=[]; Object.values(buckets).forEach(a=>rest.push(...a)); shuffle(rest);
+    for(const r of rest){if(picked.length===WANT)break;if(seen.has(r.id))continue;
+      picked.push(r); seen.add(r.id);}
   }
 
-  if(!selection.length){
-    msg.textContent=`${region} 区域在 ${fromY}–${toY} 无符合条件藏品`;
-    return;
-  }
+  if(!picked.length){msg.textContent=`${region} 区域在 ${fromY}–${toY} 无符合条件藏品`;return;}
 
-  shuffle(selection);
-  selection.forEach(addCard);
-
-  /* --- 汇总 --- */
-  const perCountry={};
-  selection.forEach(r=>{
-    const p=originOf(r); perCountry[p]=(perCountry[p]||0)+1;
-  });
-  const summary=Object.entries(perCountry).map(([c,n])=>`${c} ${n}件`).join('，');
-  msg.textContent=`共显示 ${selection.length} 件 (${summary}) — 区域：${region}，年代 ${fromY}–${toY}`;
+  shuffle(picked); picked.forEach(drawCard);
+  const per={}; picked.forEach(r=>{const p=origin(r); per[p]=(per[p]||0)+1;});
+  msg.textContent=`共显示 ${picked.length} 件 (${Object.entries(per).map(([k,n])=>k+' '+n+'件').join('，')}) — 区域：${region}，年代 ${fromY}–${toY}`;
 }
 
-/* ====== 子函数 ====== */
-async function getPlaceId(country){
-  const url=`https://api.harvardartmuseums.org/place?apikey=${APIKEY}&size=1&q=${encodeURIComponent(country)}`;
+/* ======= 每国抓取 ======= */
+async function loadCountry(country,f,t){
+  const bucket=[];
+  const pid=await placeId(country);
+  if(!pid) return bucket;
+  const fields='id,title,dated,people,place,places,primaryimageurl,images,iiifbaseuri';
+
+  for(let n=0;n<MAX_BATCHES && bucket.length<WANT*5;n++){
+    const url=`https://api.harvardartmuseums.org/object?apikey=${APIKEY}`
+            +`&place=${pid}&hasimage=1&size=${BATCH_SIZE}&sort=random&fields=${fields}`;
+    try{
+      const j=await fetch(url).then(r=>r.json());
+      (j.records||[]).forEach(o=>{
+        if(o.primaryimageurl && dateOk(o.dated,f,t)) bucket.push(o);
+      });
+      if((j.records||[]).length<BATCH_SIZE) break;
+    }catch(e){console.error(e);break;}
+  }
+  shuffle(bucket);
+  return bucket;
+}
+
+async function placeId(country){
   try{
-    log(`Fetching placeId for ${country}\n${url}`);
-    const j = await fetch(url).then(r=>r.json());
-    const id = j.records?.[0]?.id;
-    log(`placeId for ${country} = ${id}`);
-    return id;
-  }catch(e){
-    log(`placeId fetch error for ${country}`,e);
-    return null;
-  }
+    const j=await fetch(`https://api.harvardartmuseums.org/place?apikey=${APIKEY}&size=1&q=${encodeURIComponent(country)}`).then(r=>r.json());
+    return j.records?.[0]?.id||null;
+  }catch{return null;}
 }
 
-function buildObjectURL(placeId,f,t){
-  const fields = 'id,title,dated,people,place,places,primaryimageurl,images,iiifbaseuri,datebegin,dateend';
-  return `https://api.harvardartmuseums.org/object?apikey=${APIKEY}`
-       +`&place=${placeId}&fromdate=${f}&todate=${t}&hasimage=1&size=${PAGE_SIZE}&fields=${fields}`;
+/* ======= 日期解析与过滤 ======= */
+function dateOk(str,f,t){
+  const rng=parseYearRange(str);
+  if(!rng) return false;
+  return !(rng[1]<f || rng[0]>t);
 }
-function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}}
-function originOf(r){return r.place || r.places?.[0]?.displayname || 'Unknown';}
 
-/* ====== 卡片渲染 ====== */
-function addCard(r){
-  const img    = r.primaryimageurl || r.images?.[0]?.baseimageurl,
-        iiif   = r.images?.[0]?.iiifbaseuri,
-        title  = r.title || '(object)',
-        date   = r.dated || '',
-        maker  = r.people?.[0]?.displayname || '',
-        place  = originOf(r);
+function parseYearRange(str){
+  if(!str) return null;
+  str=str.toLowerCase();
+
+  const yrs=[];
+
+  /* 1️⃣ millennium BCE */
+  str.replace(/(\d+)(?:st|nd|rd|th)?\s+millennium\s*(bce|bc|ce|ad)?/g,(m,n,era)=>{
+    const s=(era&&/bce|bc/.test(era))?-n*1000:n*1000-999;
+    const e=s+999*(s<0?-1:1);
+    yrs.push(Math.min(s,e),Math.max(s,e));
+  });
+
+  /* 2️⃣ century RANGE e.g. 12th-11th century BCE */
+  str.replace(/(\d+)(?:st|nd|rd|th)?\s*-\s*(\d+)(?:st|nd|rd|th)?\s+century\s*(bce|bc|ce|ad)?/g,(m,a,b,era)=>{
+    const s=(a-1)*100, e=(b-1)*100+99;
+    if(era&&/bce|bc/.test(era)){yrs.push(-e,-s);}else{yrs.push(s,e);}
+  });
+
+  /* 3️⃣ single century with modifier */
+  str.replace(/(early|mid|late)?\s*(\d+)(?:st|nd|rd|th)?\s+century\s*(bce|bc|ce|ad)?/g,(m,mod,n,era)=>{
+    let s=(n-1)*100, e=s+99;
+    if(mod==='early') e=s+49;
+    if(mod==='late')  s+=50;
+    if(mod==='mid'){ s+=25; e-=25; }
+    if(era&&/bce|bc/.test(era)){yrs.push(-e,-s);}else{yrs.push(s,e);}
+  });
+
+  /* 4️⃣ numeric RANGE (1000-800 BCE) */
+  str.replace(/(\d{1,4})\s*[-–—]\s*(\d{1,4})\s*(bce|bc|ce|ad)?/g,(m,a,b,era)=>{
+    let s=+a, e=+b;
+    if(era&&/bce|bc/.test(era)){s=-s;e=-e;}
+    yrs.push(Math.min(s,e),Math.max(s,e));
+  });
+
+  /* 5️⃣ circa / single year */
+  str.replace(/c\.?\s*(\d{1,4})\s*(bce|bc|ce|ad)?/g,(m,y,era)=>{
+    y=+y; if(era&&/bce|bc/.test(era)) y=-y;
+    yrs.push(y,y);
+  });
+
+  if(!yrs.length) return null;
+  return [Math.min(...yrs),Math.max(...yrs)];
+}
+
+/* ======= 渲染 ======= */
+function origin(r){return r.place || r.places?.[0]?.displayname || 'Unknown';}
+function drawCard(r){
+  const img=r.primaryimageurl || r.images?.[0]?.baseimageurl,
+        iiif=r.images?.[0]?.iiifbaseuri,
+        title=r.title||'(object)',
+        date=r.dated||'',
+        maker=r.people?.[0]?.displayname||'',
+        place=origin(r);
   grid.insertAdjacentHTML('beforeend',`
     <div class="item">
       <img src="${img}" alt="${title}" ${iiif?`onclick="window.open('${iiif}/full/768,/0/default.jpg')"`:''}>
@@ -204,6 +197,8 @@ function addCard(r){
       </p>
     </div>`);
 }
+
+/* ======= 工具 ======= */
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}}
 </script>
-</body>
-</html>
+</body></html>
