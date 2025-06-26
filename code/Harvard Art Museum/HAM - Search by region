@@ -15,7 +15,7 @@
   .msg{margin-top:1rem;font-style:italic}
 </style></head><body>
 
-<h2>Harvard Art Museums · Region search</h2>
+<h2>Harvard Art Museums · Region search (strict date)</h2>
 
 <form id="qry">
   Region:
@@ -27,7 +27,7 @@
     <option>Africa &amp; Oceania</option>
   </select>
   From&nbsp;year: <input id="yearFrom" placeholder="-800" required>
-  To&nbsp;year:&nbsp;<input id="yearTo"   placeholder="1200" required>
+  To&nbsp;year:&nbsp;<input id="yearTo"   placeholder="1300" required>
   <button type="submit">Search</button>
 </form>
 
@@ -35,152 +35,164 @@
 <p class="msg" id="msg"></p>
 
 <script>
-/* ======= 配置 ======= */
-const APIKEY      = 'd54e083e-a267-40e4-8d55-f1259589be3b';   // ← 换成你的 key
-const WANT        = 20;
-const BATCH_SIZE  = 100;
-const MAX_BATCHES = 5;
-const MAX_COUNTRY = 8;
+/* ===== 配置 ===== */
+const APIKEY='d54e083e-a267-40e4-8d55-f1259589be3b';
+const WANT=20, BATCH=100, MAX_BATCH=5, MAX_COUNTRY=8;
 
-const REGION = {
-  "Europe": ["France","Germany","Italy","United Kingdom","England","Netherlands","Spain","Sweden","Russia"],
-  "North and central America": ["United States","USA","Mexico","Canada","Guatemala","Cuba"],
-  "Asia": ["China","Japan","India","Korea","Iran","Turkey","Thailand","Indonesia"],
-  "Latin America": ["Brazil","Argentina","Peru","Chile","Colombia","Ecuador","Bolivia"],
-  "Africa & Oceania": ["Nigeria","Egypt","South Africa","Kenya","Ghana","Australia","New Zealand","Fiji","Papua New Guinea"]
+const REGION={
+  Europe:["France","Germany","Italy","United Kingdom","England","Netherlands","Spain","Sweden","Russia"],
+  "North and central America":["United States","USA","Mexico","Canada","Guatemala","Cuba"],
+  Asia:["China","Japan","India","Korea","Iran","Turkey","Thailand","Indonesia"],
+  "Latin America":["Brazil","Argentina","Peru","Chile","Colombia","Ecuador","Bolivia"],
+  "Africa & Oceania":["Nigeria","Egypt","South Africa","Kenya","Ghana","Australia","New Zealand","Fiji","Papua New Guinea"]
 };
 
-/* ======= DOM ======= */
+/* ===== DOM ===== */
 const grid=document.getElementById('grid'), msg=document.getElementById('msg');
 document.getElementById('qry').addEventListener('submit',e=>{
   e.preventDefault();
   const f=+yearFrom.value, t=+yearTo.value;
   if(isNaN(f)||isNaN(t)){alert('请输入有效年份');return;}
-  run(regionSel.value, Math.min(f,t), Math.max(f,t));
+  run(regionSel.value,Math.min(f,t),Math.max(f,t));
 });
 
-/* ======= 主流程 ======= */
-async function run(region, fromY, toY){
+/* ===== 主流程 ===== */
+async function run(region,f,t){
   grid.innerHTML=''; msg.textContent='Loading…';
-  const countries=[...REGION[region]]; shuffle(countries);
+  const buckets={}, jobs=[], countries=[...REGION[region]]; shuffle(countries);
 
-  const buckets={}, jobs=[];
-  for(const c of countries.slice(0,MAX_COUNTRY)){
-    jobs.push(loadCountry(c,fromY,toY).then(arr=>{if(arr.length)buckets[c]=arr;}));
-  }
+  for(const c of countries.slice(0,MAX_COUNTRY))
+    jobs.push(loadCountry(c,f,t).then(arr=>{if(arr.length)buckets[c]=arr;}));
   await Promise.all(jobs);
 
-  /* —— 轮询平均抽取 —— */
   const picked=[], seen=new Set();
   while(picked.length<WANT){
     let moved=false;
     for(const arr of Object.values(buckets)){
       while(arr.length && seen.has(arr.at(-1).id)) arr.pop();
-      if(arr.length){
-        picked.push(arr.pop()); seen.add(picked.at(-1).id); moved=true;
-        if(picked.length===WANT) break;
-      }
+      if(arr.length){picked.push(arr.pop());seen.add(picked.at(-1).id);moved=true;if(picked.length===WANT)break;}
     }
-    if(!moved) break;
+    if(!moved)break;
   }
-  if(picked.length<WANT){
-    const rest=[]; Object.values(buckets).forEach(a=>rest.push(...a)); shuffle(rest);
-    for(const r of rest){if(picked.length===WANT)break;if(seen.has(r.id))continue;
-      picked.push(r); seen.add(r.id);}
+  if(picked.length<WANT){const rest=[];Object.values(buckets).forEach(a=>rest.push(...a));
+    shuffle(rest);
+    for(const r of rest){if(picked.length===WANT)break;if(seen.has(r.id))continue;picked.push(r);seen.add(r.id);}
   }
 
-  if(!picked.length){msg.textContent=`${region} 区域在 ${fromY}–${toY} 无符合条件藏品`;return;}
-
+  if(!picked.length){msg.textContent=`${region} 区域在 ${f}–${t} 无符合条件藏品`;return;}
   shuffle(picked); picked.forEach(drawCard);
   const per={}; picked.forEach(r=>{const p=origin(r); per[p]=(per[p]||0)+1;});
-  msg.textContent=`共显示 ${picked.length} 件 (${Object.entries(per).map(([k,n])=>k+' '+n+'件').join('，')}) — 区域：${region}，年代 ${fromY}–${toY}`;
+  msg.textContent=`共显示 ${picked.length} 件 (${Object.entries(per).map(([k,n])=>k+' '+n+'件').join('，')}) — 区域：${region}，年代 ${f}–${t}`;
 }
 
-/* ======= 每国抓取 ======= */
+/* ===== 每国抓取 ===== */
 async function loadCountry(country,f,t){
-  const bucket=[];
-  const pid=await placeId(country);
-  if(!pid) return bucket;
+  const list=[], pid=await getPlaceId(country);
+  if(!pid) return list;
   const fields='id,title,dated,people,place,places,primaryimageurl,images,iiifbaseuri';
 
-  for(let n=0;n<MAX_BATCHES && bucket.length<WANT*5;n++){
-    const url=`https://api.harvardartmuseums.org/object?apikey=${APIKEY}`
-            +`&place=${pid}&hasimage=1&size=${BATCH_SIZE}&sort=random&fields=${fields}`;
+  for(let i=0;i<MAX_BATCH&&list.length<WANT*5;i++){
+    const url=`https://api.harvardartmuseums.org/object?apikey=${APIKEY}&place=${pid}&hasimage=1&size=${BATCH}&sort=random&fields=${fields}`;
     try{
       const j=await fetch(url).then(r=>r.json());
-      (j.records||[]).forEach(o=>{
-        if(o.primaryimageurl && dateOk(o.dated,f,t)) bucket.push(o);
-      });
-      if((j.records||[]).length<BATCH_SIZE) break;
-    }catch(e){console.error(e);break;}
+      (j.records||[]).forEach(o=>{if(o.primaryimageurl&&dateWithin(o.dated,f,t))list.push(o);});
+      if((j.records||[]).length<BATCH) break;
+    }catch{break;}
   }
-  shuffle(bucket);
-  return bucket;
+  shuffle(list);
+  return list;
 }
-
-async function placeId(country){
+async function getPlaceId(c){
   try{
-    const j=await fetch(`https://api.harvardartmuseums.org/place?apikey=${APIKEY}&size=1&q=${encodeURIComponent(country)}`).then(r=>r.json());
+    const j=await fetch(`https://api.harvardartmuseums.org/place?apikey=${APIKEY}&size=1&q=${encodeURIComponent(c)}`).then(r=>r.json());
     return j.records?.[0]?.id||null;
   }catch{return null;}
 }
 
-/* ======= 日期解析与过滤 ======= */
-function dateOk(str,f,t){
+/* ===== 日期解析 ===== */
+function dateWithin(str,f,t){
   const rng=parseYearRange(str);
   if(!rng) return false;
-  return !(rng[1]<f || rng[0]>t);
+  return !(rng[1]<f||rng[0]>t);
 }
 
+function expandShort(y1,y2str){               /* 1620-40 → 1640 */
+  const len2=y2str.length, factor=10**len2;
+  const prefix=Math.floor(y1/factor);
+  return prefix*factor + +y2str;
+}
+
+/* ====== 解析 dated 字段，返回 [minYear, maxYear] 或 null ====== */
 function parseYearRange(str){
   if(!str) return null;
-  str=str.toLowerCase();
+  str = str.toLowerCase();
 
-  const yrs=[];
+  const yrs = [];                     // 收集所有解析出的年份
+  const add = (a,b)=>yrs.push(a,b);   // 方便 push
 
-  /* 1️⃣ millennium BCE */
-  str.replace(/(\d+)(?:st|nd|rd|th)?\s+millennium\s*(bce|bc|ce|ad)?/g,(m,n,era)=>{
-    const s=(era&&/bce|bc/.test(era))?-n*1000:n*1000-999;
-    const e=s+999*(s<0?-1:1);
-    yrs.push(Math.min(s,e),Math.max(s,e));
-  });
+  /* ---------- 1. millennium ---------- */
+  str = str.replace(/(\d+)(?:st|nd|rd|th)?\s+millennium\s*(bce|bc|ce|ad)?/g,
+    (_,n,era)=>{
+      n = +n; era = era||'ce';
+      if(/b/.test(era)) add(-n*1000, -(n-1)*1000-1);
+      else              add((n-1)*1000, n*1000-1);
+      return ' ';
+    });
 
-  /* 2️⃣ century RANGE e.g. 12th-11th century BCE */
-  str.replace(/(\d+)(?:st|nd|rd|th)?\s*-\s*(\d+)(?:st|nd|rd|th)?\s+century\s*(bce|bc|ce|ad)?/g,(m,a,b,era)=>{
-    const s=(a-1)*100, e=(b-1)*100+99;
-    if(era&&/bce|bc/.test(era)){yrs.push(-e,-s);}else{yrs.push(s,e);}
-  });
+  /* ---------- 2. century RANGE (含 early/mid/late) ---------- */
+  str = str.replace(
+    /(early|mid|late)?\s*(\d+)(?:st|nd|rd|th)?\s*-\s*(early|mid|late)?\s*(\d+)(?:st|nd|rd|th)?\s+century\s*(bce|bc|ce|ad)?/g,
+    (_,m1,c1,m2,c2,era)=>{
+      const seg=(c,mod)=>{c=+c;let a=(c-1)*100,b=a+99;
+        if(mod==='early') b=a+49;
+        else if(mod==='late') a+=50;
+        else if(mod==='mid'){a+=25;b-=25;}
+        return [a,b];};
+      let[from1,to1]=seg(c1,m1),[from2,to2]=seg(c2,m2);
+      let a=Math.min(from1,from2), b=Math.max(to1,to2);
+      if(/b/.test(era)) add(-b,-a); else add(a,b);
+      return ' ';
+    });
 
-  /* 3️⃣ single century with modifier */
-  str.replace(/(early|mid|late)?\s*(\d+)(?:st|nd|rd|th)?\s+century\s*(bce|bc|ce|ad)?/g,(m,mod,n,era)=>{
-    let s=(n-1)*100, e=s+99;
-    if(mod==='early') e=s+49;
-    if(mod==='late')  s+=50;
-    if(mod==='mid'){ s+=25; e-=25; }
-    if(era&&/bce|bc/.test(era)){yrs.push(-e,-s);}else{yrs.push(s,e);}
-  });
+  /* ---------- 3. single century (含修饰) ---------- */
+  str = str.replace(
+    /(early|mid|late)?\s*(\d+)(?:st|nd|rd|th)?\s+century\s*(bce|bc|ce|ad)?/g,
+    (_,mod,c,era)=>{
+      c=+c; let a=(c-1)*100,b=a+99;
+      if(mod==='early') b=a+49;
+      else if(mod==='late') a+=50;
+      else if(mod==='mid'){a+=25;b-=25;}
+      if(/b/.test(era)) add(-b,-a); else add(a,b);
+      return ' ';
+    });
 
-  /* 4️⃣ numeric RANGE (1000-800 BCE) */
-  str.replace(/(\d{1,4})\s*[-–—]\s*(\d{1,4})\s*(bce|bc|ce|ad)?/g,(m,a,b,era)=>{
-    let s=+a, e=+b;
-    if(era&&/bce|bc/.test(era)){s=-s;e=-e;}
-    yrs.push(Math.min(s,e),Math.max(s,e));
-  });
+  /* ---------- 4. numeric RANGE 1620-40 / 1853-54 / 1800-1900 ---------- */
+  str = str.replace(/(?:c\.?\s*)?(\d{3,4})\s*[-–—]\s*(\d{1,4})\s*(bce|bc|ce|ad)?/g,
+    (_,y1,y2,era)=>{
+      let a=+y1, b;
+      if(y2.length < y1.length && !(era && /b/.test(era))){   // 短写扩展
+        b = a - (a % (10**y2.length)) + +y2;                  // 1620-40 → 1640
+      }else b = +y2;
+      if(/b/.test(era)){ a=-a; b=-b; if(a>b)[a,b]=[b,a]; }
+      add(a,b);
+      return ' ';
+    });
 
-  /* 5️⃣ circa / single year */
-  str.replace(/c\.?\s*(\d{1,4})\s*(bce|bc|ce|ad)?/g,(m,y,era)=>{
-    y=+y; if(era&&/bce|bc/.test(era)) y=-y;
-    yrs.push(y,y);
-  });
+  /* ---------- 5. circa / 单年份 ---------- */
+  str = str.replace(/(?:c\.?\s*)?(\d{3,4})\s*(bce|bc|ce|ad)?/g,
+    (_,y,era)=>{
+      y=+y; if(/b/.test(era)) y=-y; add(y,y);
+      return ' ';
+    });
 
-  if(!yrs.length) return null;
-  return [Math.min(...yrs),Math.max(...yrs)];
+  return yrs.length ? [Math.min(...yrs), Math.max(...yrs)] : null;
 }
 
-/* ======= 渲染 ======= */
+
+/* ===== 渲染 ===== */
 function origin(r){return r.place || r.places?.[0]?.displayname || 'Unknown';}
 function drawCard(r){
-  const img=r.primaryimageurl || r.images?.[0]?.baseimageurl,
+  const img=r.primaryimageurl||r.images?.[0]?.baseimageurl,
         iiif=r.images?.[0]?.iiifbaseuri,
         title=r.title||'(object)',
         date=r.dated||'',
@@ -189,16 +201,15 @@ function drawCard(r){
   grid.insertAdjacentHTML('beforeend',`
     <div class="item">
       <img src="${img}" alt="${title}" ${iiif?`onclick="window.open('${iiif}/full/768,/0/default.jpg')"`:''}>
-      <p>
-        <strong>Name:</strong> ${title}<br>
-        <strong>Date:</strong> ${date}<br>
-        <strong>Artist/Maker:</strong> ${maker}<br>
-        <strong>Place&nbsp;of&nbsp;origin:</strong> ${place}
-      </p>
+      <p><strong>Name:</strong> ${title}<br>
+         <strong>Date:</strong> ${date}<br>
+         <strong>Artist/Maker:</strong> ${maker}<br>
+         <strong>Place&nbsp;of&nbsp;origin:</strong> ${place}</p>
     </div>`);
 }
 
-/* ======= 工具 ======= */
+/* ===== 工具 ===== */
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}}
 </script>
-</body></html>
+</body>
+</html>
