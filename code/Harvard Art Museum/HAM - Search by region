@@ -37,10 +37,10 @@
 <script>
 /* ===== 配置 ===== */
 const APIKEY='d54e083e-a267-40e4-8d55-f1259589be3b';
-const WANT=20, BATCH=100, MAX_BATCH=5, MAX_COUNTRY=8;
+const WANT=20, BATCH=100, MAX_COUNTRY=8;
 
 const REGION={
-  Europe:["France","Germany","Italy","United Kingdom","England","Netherlands","Spain","Sweden","Russia"],
+  Europe:["France","Germany","Italy","United Kingdom","England","Netherlands","Spain","Sweden","Russia","Greece"],
   "North and central America":["United States","USA","Mexico","Canada","Guatemala","Cuba"],
   Asia:["China","Japan","India","Korea","Iran","Turkey","Thailand","Indonesia"],
   "Latin America":["Brazil","Argentina","Peru","Chile","Colombia","Ecuador","Bolivia"],
@@ -85,29 +85,61 @@ async function run(region,f,t){
   msg.textContent=`共显示 ${picked.length} 件 (${Object.entries(per).map(([k,n])=>k+' '+n+'件').join('，')}) — 区域：${region}，年代 ${f}–${t}`;
 }
 
-/* ===== 每国抓取 ===== */
-async function loadCountry(country,f,t){
-  const list=[], pid=await getPlaceId(country);
-  if(!pid) return list;
-  const fields='id,title,dated,people,place,places,primaryimageurl,images,iiifbaseuri';
+/* ===== 每国抓取（更稳定 · 超时可控） ===== */
+async function loadCountry(country, f, t) {
+  const list = [];
+  const pid  = await getPlaceId(country);
+  if (!pid) return list;
 
-  for(let i=0;i<MAX_BATCH&&list.length<WANT*5;i++){
-    const url=`https://api.harvardartmuseums.org/object?apikey=${APIKEY}&place=${pid}&hasimage=1&size=${BATCH}&sort=random&fields=${fields}`;
-    try{
-      const j=await fetch(url).then(r=>r.json());
-      (j.records||[]).forEach(o=>{if(o.primaryimageurl&&dateWithin(o.dated,f,t))list.push(o);});
-      if((j.records||[]).length<BATCH) break;
-    }catch{break;}
+  const fields   = 'id,title,dated,people,place,places,primaryimageurl,images,iiifbaseuri';
+  const pageSize = BATCH;           // 仍然用你设定的 BATCH (=100)
+  const MAX_TIME = 7000;            // 最多等待 7 秒就停
+  const t0 = Date.now();
+
+  let page = 1;
+  while (list.length < WANT && (Date.now() - t0) < MAX_TIME) {
+    const url = `https://api.harvardartmuseums.org/object`
+              + `?apikey=${APIKEY}`
+              + `&place=${pid}`
+              + `&hasimage=1`
+              + `&size=${pageSize}`
+              + `&page=${page}`
+              + `&fromdate=${f}&todate=${t}`        // 服务器先按数字日期过滤
+              + `&fields=${fields}`;
+
+    try {
+      const j = await fetch(url).then(r => r.json());
+      const recs = j.records || [];
+
+      // 前端二次校验（兼容模糊 dated）
+      for (const o of recs) {
+        if (o.primaryimageurl && dateWithin(o.dated, f, t)) {
+          list.push(o);
+          if (list.length >= WANT) break;   // 够 20 件立刻停止
+        }
+      }
+
+      // 如果本页少于 pageSize，说明已到尾页
+      if (recs.length < pageSize) break;
+      page += 1;
+    } catch (e) {
+      console.warn(`Fetch error for ${country} page ${page}`, e);
+      break;   // 网络异常直接跳出，返回已抓到的
+    }
   }
-  shuffle(list);
-  return list;
+
+  shuffle(list);          // 仍然打乱顺序，保持后续轮询均匀
+  return list;            // 可能 < WANT，但已尽力
 }
+
+
 async function getPlaceId(c){
   try{
     const j=await fetch(`https://api.harvardartmuseums.org/place?apikey=${APIKEY}&size=1&q=${encodeURIComponent(c)}`).then(r=>r.json());
     return j.records?.[0]?.id||null;
   }catch{return null;}
 }
+
 
 /* ===== 日期解析 ===== */
 function dateWithin(str,f,t){
