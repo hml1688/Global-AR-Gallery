@@ -37,15 +37,17 @@
 <script>
 /* ===== 配置 ===== */
 const APIKEY='d54e083e-a267-40e4-8d55-f1259589be3b';
-const WANT=20, BATCH=100, MAX_COUNTRY=8;
+const WANT=20, BATCH=100;
 
 const REGION={
-  Europe:["France","Germany","Italy","United Kingdom","England","Netherlands","Spain","Sweden","Russia","Greece"],
-  "North and central America":["United States","USA","Mexico","Canada","Guatemala","Cuba"],
-  Asia:["China","Japan","India","Korea","Iran","Turkey","Thailand","Indonesia"],
+  Europe:["France","Germany","Italy","United Kingdom","England","Netherlands","Spain","Sweden","Russia","Greece","Austria","Belgium","Denmark","Ireland","Malta","Norway","Portugal","Switherland"],
+  "North and central America":["United States","USA","Mexico","Canada","Guatemala","Cuba","Costa Rica","Panama","Greenland"],
+  Asia:["China","Japan","India","Korea","Iran","Turkey","Thailand","Indonesia","Afghanistan","Armenia","Azerbaijan","Caucasus","Dagestan","Georgia","Uzbekistan","Mongolia","Iraq","Palestine","Syria","Nepal","Pakistan","Sri Lanka","Cambodia","Burma","Vietnam","Philippines","Malaysia"],
   "Latin America":["Brazil","Argentina","Peru","Chile","Colombia","Ecuador","Bolivia"],
-  "Africa & Oceania":["Nigeria","Egypt","South Africa","Kenya","Ghana","Australia","New Zealand","Fiji","Papua New Guinea"]
+  "Africa & Oceania":["Nigeria","Egypt","South Africa","North Africa","Algeria","Congo","Ethiopia","Morocco","Sudan","Uganda","Kenya","Ghana","Australia","New Zealand","Fiji","Papua New Guinea","Tahiti","Marquesas Islands"]
 };
+
+const MAX_COUNTRY = 30; //设一个较大的数
 
 /* ===== DOM ===== */
 const grid=document.getElementById('grid'), msg=document.getElementById('msg');
