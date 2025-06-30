@@ -10,7 +10,9 @@ public class FloatingPanel : MonoBehaviour
     public TMP_InputField yearFromInput;         // 拖 input
     public TMP_InputField yearToInput;           // 拖 input
     public Button toggleButton;                  // ☰ 按钮（可选）
-    public GalleryManager galleryManager;        // 拖 GalleryManager
+    // ——改成同时引用两种 Manager——
+    public GalleryManagerVA       vaManager;
+    public GalleryManagerHarvard  harvardManager;
 
     /* ---------- 1. 场景开始时，把输入框填成当前筛选 ---------- */
     void Start()
@@ -53,13 +55,17 @@ public class FloatingPanel : MonoBehaviour
 
         // 关闭面板 + 重新抓取贴图
         configPanel.SetActive(false);
-        galleryManager.ReloadGallery();
+        // ——同时刷新两家博物馆——
+        if (vaManager)       vaManager.ReloadGallery();
+        if (harvardManager)  harvardManager.ReloadGallery();
     }
 
     /* ---------- 4. 单独的 Refresh 按钮 ---------- */
     public void OnRefresh()
     {
-        galleryManager.ReloadGallery();   // 不改筛选，只换 20 张
+        // 不改筛选，只换 20 张
+        if (vaManager)       vaManager.ReloadGallery();
+        if (harvardManager)  harvardManager.ReloadGallery();
     }
 
     // 5.单独的关闭函数（不刷新）

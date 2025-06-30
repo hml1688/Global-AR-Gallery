@@ -1236,7 +1236,7 @@ GameObject:
   - component: {fileID: 5470287882073691380}
   m_Layer: 0
   m_Name: Canvas_16
-  m_TagString: ArtFrame
+  m_TagString: ArtFrameHarvard
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1430,7 +1430,7 @@ GameObject:
   - component: {fileID: 869859650241831023}
   m_Layer: 0
   m_Name: Canvas_17
-  m_TagString: ArtFrame
+  m_TagString: ArtFrameHarvard
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1624,7 +1624,7 @@ GameObject:
   - component: {fileID: 9067073030087885072}
   m_Layer: 0
   m_Name: Canvas_11
-  m_TagString: ArtFrame
+  m_TagString: ArtFrameHarvard
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1818,7 +1818,7 @@ GameObject:
   - component: {fileID: 5524918763965294722}
   m_Layer: 0
   m_Name: Canvas_12
-  m_TagString: ArtFrame
+  m_TagString: ArtFrameHarvard
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2012,7 +2012,7 @@ GameObject:
   - component: {fileID: 5360278180447700705}
   m_Layer: 0
   m_Name: Canvas_19
-  m_TagString: ArtFrame
+  m_TagString: ArtFrameHarvard
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3182,7 +3182,7 @@ GameObject:
   - component: {fileID: 6377573200964540697}
   m_Layer: 0
   m_Name: Canvas_18
-  m_TagString: ArtFrame
+  m_TagString: ArtFrameHarvard
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4396,7 +4396,7 @@ GameObject:
   - component: {fileID: 725912941318214824}
   m_Layer: 0
   m_Name: Canvas_20
-  m_TagString: ArtFrame
+  m_TagString: ArtFrameHarvard
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4834,7 +4834,7 @@ GameObject:
   - component: {fileID: 7691323149454165757}
   m_Layer: 0
   m_Name: Canvas_15
-  m_TagString: ArtFrame
+  m_TagString: ArtFrameHarvard
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -6148,7 +6148,7 @@ GameObject:
   - component: {fileID: 7789279535252500430}
   m_Layer: 0
   m_Name: Canvas_14
-  m_TagString: ArtFrame
+  m_TagString: ArtFrameHarvard
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -7218,7 +7218,7 @@ GameObject:
   - component: {fileID: 3112387273815547531}
   m_Layer: 0
   m_Name: Canvas_13
-  m_TagString: ArtFrame
+  m_TagString: ArtFrameHarvard
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

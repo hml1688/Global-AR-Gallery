@@ -21,7 +21,8 @@ public class TapToPlaceGallery : MonoBehaviour
     static readonly List<ARRaycastHit> hits = new();
 
     // ✅ 添加：用于获取场景里的 GalleryManager 脚本
-    GalleryManager galleryManager;
+    public GalleryManagerVA       vaManager;
+    public GalleryManagerHarvard  harvardManager;
 
     void Awake() => raycaster = GetComponent<ARRaycastManager>();
 
@@ -72,15 +73,8 @@ public class TapToPlaceGallery : MonoBehaviour
         galleryInstance.transform.position += offset;
 
          // ✅ 添加：找到场景里的 GalleryManager 脚本并调用 ReloadGallery()
-        if (!galleryManager)
-        {
-            galleryManager = FindObjectOfType<GalleryManager>();
-        }
-
-        if (galleryManager != null)
-        {
-            galleryManager.ReloadGallery();
-        }
+        if (vaManager)      vaManager.ReloadGallery();
+        if (harvardManager) harvardManager.ReloadGallery(); 
         else
         {
             Debug.LogError("❌ 场景中未找到 GalleryManager 脚本！");

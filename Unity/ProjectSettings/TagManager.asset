@@ -6,6 +6,7 @@ TagManager:
   tags:
   - ArtFrame
   - DebugText
+  - ArtFrameHarvard
   layers:
   - Default
   - TransparentFX
