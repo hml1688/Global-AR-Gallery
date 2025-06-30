@@ -31,7 +31,7 @@ public class InfoPanel : MonoBehaviour
         if (museumValue)
         {
             string museum = f.gameObject.CompareTag("ArtFrameHarvard")
-                            ? "Harvard Art Museums"
+                            ? "Harvard Art Museum"
                             : "V&A Museum";
             museumValue.text = museum;
         }
