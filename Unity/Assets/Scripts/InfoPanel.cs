@@ -9,7 +9,7 @@ public class InfoPanel : MonoBehaviour
     public GameObject      canvasRoot;
     public RawImage        img;
     public AspectRatioFitter fitter;     // ✦ 新增：拖 ImgHolder 的组件
-    public TextMeshProUGUI titleValue, dateValue, makerValue, placeValue, loadingHint;
+    public TextMeshProUGUI titleValue, dateValue, makerValue, placeValue, museumValue, loadingHint;
 
     static InfoPanel inst;
     void Awake() => inst = this;
@@ -26,6 +26,15 @@ public class InfoPanel : MonoBehaviour
         dateValue.text  = f.date;
         makerValue.text = string.IsNullOrWhiteSpace(f.maker) ? "Unknown" : f.maker;
         placeValue.text = f.place;
+
+         /* ★★ 判断 Tag 来显示来源馆 ★★ */
+        if (museumValue)
+        {
+            string museum = f.gameObject.CompareTag("ArtFrameHarvard")
+                            ? "Harvard Art Museums"
+                            : "V&A Museum";
+            museumValue.text = museum;
+        }
 
         // ☆ 1. 下载（或用缓存）
         if (f.hiTex == null)
