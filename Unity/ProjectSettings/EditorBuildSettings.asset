@@ -23,6 +23,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/App Designs/Menu.unity
     guid: a30b8164b09952f469ff513aba7d9761
+  - enabled: 1
+    path: Assets/Scenes/App Designs/WeatherGalleryScene.unity
+    guid: 2f1b2e00cd960c74498df00b25f8a62d
+  - enabled: 1
+    path: Assets/Scenes/App Designs/WeatherPrep.unity
+    guid: d58c8bd05f92df846a248fe021df33d0
   m_configObjects:
     UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: 6ee72d15cf39dd748a13eac57397b9af,
       type: 2}
