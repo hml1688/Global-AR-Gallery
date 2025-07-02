@@ -54,30 +54,39 @@ goBtn.onclick = async () =>{
   finally{ goBtn.disabled = false; }
 };
 
-/* ---------- V&A ---------- */
+/* ---------- V&A fetch ---------- */
 async function fetchVA(keyword){
   const url = `https://api.vam.ac.uk/v2/objects/search`
             + `?q=${encodeURIComponent(keyword)}`
             + `&image_exists=true&page_size=100`
-            + `&fields=_primaryImageId,_primaryTitle,objectDescription`;   // ← 正确字段
+            + `&responseGroup=full`;
   const res = await fetch(url);
-  if(!res.ok) throw 'V&A  fetch failed';
+  if(!res.ok) throw 'V&A fetch failed';
   const {records=[]} = await res.json();
 
-  // 只保留有 _primaryImageId 的记录
   const withImg = records.filter(r => r._primaryImageId);
   shuffle(withImg);
-  return withImg.slice(0,10).map(r=>{
+   return withImg.slice(0, 10).map(r => {
     const img = `https://framemark.vam.ac.uk/collections/${r._primaryImageId}/full/400,/0/default.jpg`;
-    return {
-      img,
-      title: r._primaryTitle || 'Untitled',
-      desc : (r.objectDescription?.[0]?.text ?? '').trim()
-    };
+
+    // ✦ 多层保障标题 fallback
+    const title =
+      r._primaryTitle ||
+      r.title ||
+      r._primaryObjectName ||
+      r.objectName ||
+      r.objectType ||
+      '(object)';
+
+    // 简单描述优先展示 objectDescription
+    const rawDesc = r.objectDescription?.[0] || {};
+    const desc = (rawDesc.value || rawDesc.text || '').trim();
+
+    return { img, title, desc };
   });
 }
 
-/* ---------- Harvard ---------- */
+/* ---------- Harvard fetch ---------- */
 async function fetchHAM(keyword){
   if(HAM_API_KEY.startsWith('PASTE')) throw 'Set Harvard API key';
   const url = `https://api.harvardartmuseums.org/object`
@@ -91,22 +100,31 @@ async function fetchHAM(keyword){
 
   const withImg = records.filter(r=>r.primaryimageurl);
   shuffle(withImg);
-  return withImg.slice(0,10).map(r=>({
-      img:r.primaryimageurl,
-      title:r.title||'Untitled',
-      desc:''
-  }));
+  return withImg.slice(0,10).map(r=>{
+      // 把超大原图降到 400px 宽
+      const small = r.primaryimageurl.replace('/full/full/0/','/full/400,/0/');
+      return { img: small, title: r.title||'Untitled', desc:'' };
+  });
 }
 
 /* ---------- 工具 ---------- */
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}}
-function render(container, arr){
-  container.innerHTML = arr.length? '' : '<p>No results.</p>';
-  arr.forEach(o=>{
+/* ---------- 渲染函数 ---------- */
+function render(container, items){
+  container.innerHTML = items.length? '' : '<p>No results.</p>';
+  items.forEach(o=>{
     const card=document.createElement('div'); card.className='card';
-    if(o.img){const im=document.createElement('img');im.src=o.img;im.alt=o.title;card.appendChild(im);}
-    const t=document.createElement('div');t.className='title';t.textContent=o.title;card.appendChild(t);
-    if(o.desc){const d=document.createElement('div');d.className='desc';d.textContent=o.desc;card.appendChild(d);}
+    if(o.img){
+      const im=document.createElement('img');
+      im.src=o.img; im.alt=o.title; im.loading='lazy';     // ← lazy-load
+      card.appendChild(im);
+    }
+    const t=document.createElement('div'); t.className='title'; t.textContent=o.title; card.appendChild(t);
+    if(o.desc){
+      const d=document.createElement('div');
+      d.className='desc'; d.style.whiteSpace='pre-line';   // ← 保留换行
+      d.textContent=o.desc; card.appendChild(d);
+    }
     container.appendChild(card);
   });
 }
