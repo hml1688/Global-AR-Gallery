@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Weather-Keyword Art Explorer</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+body{font-family:Arial,Helvetica,sans-serif;margin:1rem;background:#F5F5F2;color:#1F1F1F}
+h2{margin:1.2rem 0 .4rem}
+#searchBar{display:flex;gap:.5rem;margin-bottom:1rem}
+input{flex:1;padding:.4rem .6rem;border:1px solid #ccc;border-radius:6px;font-size:1rem}
+button{padding:.45rem 1.2rem;background:#4B5D67;color:#fff;border:none;border-radius:6px;cursor:pointer}
+button:disabled{opacity:.5}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem}
+.card{background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:.5rem;display:flex;flex-direction:column}
+.card img{max-width:100%;border-radius:4px;aspect-ratio:3/4;object-fit:cover}
+.title{font-size:.9rem;font-weight:600;margin:.4rem 0 .2rem}
+.desc{font-size:.8rem;color:#4C4C4C}
+</style>
+</head>
+<body>
+<div id="searchBar">
+  <input id="keyword" placeholder="Enter weather keyword e.g. sun, rain…" />
+  <button id="goBtn">Search</button>
+</div>
+
+<h2>V&amp;A Museum</h2>
+<div id="vaGrid" class="grid"></div>
+
+<h2>Harvard Art Museums</h2>
+<div id="hamGrid" class="grid"></div>
+
+<script>
+/* ---------- 填你的 Harvard key ---------- */
+const HAM_API_KEY = "d54e083e-a267-40e4-8d55-f1259589be3b";
+
+/* ---------- DOM ---------- */
+const goBtn = document.getElementById('goBtn');
+const kwIn  = document.getElementById('keyword');
+const vaDiv = document.getElementById('vaGrid');
+const hamDiv= document.getElementById('hamGrid');
+
+goBtn.onclick = async () =>{
+  const kw = kwIn.value.trim();
+  if(!kw) return;
+  goBtn.disabled = true;
+  vaDiv.innerHTML = hamDiv.innerHTML = '<p>Loading…</p>';
+
+  try{
+    const [va, ham] = await Promise.all([fetchVA(kw), fetchHAM(kw)]);
+    render(vaDiv,  va);
+    render(hamDiv, ham);
+  }catch(e){ alert(e); }
+  finally{ goBtn.disabled = false; }
+};
+
+/* ---------- V&A ---------- */
+async function fetchVA(keyword){
+  const url = `https://api.vam.ac.uk/v2/objects/search`
+            + `?q=${encodeURIComponent(keyword)}`
+            + `&image_exists=true&page_size=100`
+            + `&fields=_primaryImageId,_primaryTitle,objectDescription`;   // ← 正确字段
+  const res = await fetch(url);
+  if(!res.ok) throw 'V&A  fetch failed';
+  const {records=[]} = await res.json();
+
+  // 只保留有 _primaryImageId 的记录
+  const withImg = records.filter(r => r._primaryImageId);
+  shuffle(withImg);
+  return withImg.slice(0,10).map(r=>{
+    const img = `https://framemark.vam.ac.uk/collections/${r._primaryImageId}/full/400,/0/default.jpg`;
+    return {
+      img,
+      title: r._primaryTitle || 'Untitled',
+      desc : (r.objectDescription?.[0]?.text ?? '').trim()
+    };
+  });
+}
+
+/* ---------- Harvard ---------- */
+async function fetchHAM(keyword){
+  if(HAM_API_KEY.startsWith('PASTE')) throw 'Set Harvard API key';
+  const url = `https://api.harvardartmuseums.org/object`
+            + `?apikey=${HAM_API_KEY}`
+            + `&size=100&hasimage=1`
+            + `&q=title:${encodeURIComponent(keyword)}`
+            + `&fields=primaryimageurl,title`;
+  const res = await fetch(url);
+  if(!res.ok) throw 'Harvard fetch failed';
+  const {records=[]} = await res.json();
+
+  const withImg = records.filter(r=>r.primaryimageurl);
+  shuffle(withImg);
+  return withImg.slice(0,10).map(r=>({
+      img:r.primaryimageurl,
+      title:r.title||'Untitled',
+      desc:''
+  }));
+}
+
+/* ---------- 工具 ---------- */
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}}
+function render(container, arr){
+  container.innerHTML = arr.length? '' : '<p>No results.</p>';
+  arr.forEach(o=>{
+    const card=document.createElement('div'); card.className='card';
+    if(o.img){const im=document.createElement('img');im.src=o.img;im.alt=o.title;card.appendChild(im);}
+    const t=document.createElement('div');t.className='title';t.textContent=o.title;card.appendChild(t);
+    if(o.desc){const d=document.createElement('div');d.className='desc';d.textContent=o.desc;card.appendChild(d);}
+    container.appendChild(card);
+  });
+}
+</script>
+</body>
+</html>
