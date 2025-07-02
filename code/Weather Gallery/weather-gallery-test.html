@@ -54,22 +54,42 @@ goBtn.onclick = async () =>{
   finally{ goBtn.disabled = false; }
 };
 
-/* ---------- V&A fetch ---------- */
+/* ---------- V&A fetch (safe random page) ---------- */
 async function fetchVA(keyword){
-  const url = `https://api.vam.ac.uk/v2/objects/search`
-            + `?q=${encodeURIComponent(keyword)}`
-            + `&image_exists=true&page_size=100`
-            + `&responseGroup=full`;
-  const res = await fetch(url);
-  if(!res.ok) throw 'V&A fetch failed';
-  const {records=[]} = await res.json();
+  const pageSize = 100;                      // 每页 100（API 上限）
+  const baseURL  = `https://api.vam.ac.uk/v2/objects/search`
+                 + `?q=${encodeURIComponent(keyword)}`
+                 + `&image_exists=true`
+                 + `&page_size=${pageSize}`
+                 + `&responseGroup=full`;
 
-  const withImg = records.filter(r => r._primaryImageId);
-  shuffle(withImg);
-   return withImg.slice(0, 10).map(r => {
+  /* ① 先请求第一页，拿到总记录数 */
+  const firstRes  = await fetch(baseURL + `&page=1`);
+  if (!firstRes.ok) throw 'V&A fetch failed';
+  const firstData = await firstRes.json();
+
+  const totalRecords = firstData.info?.record_count || firstData.records.length;
+  const totalPages   = Math.max(1, Math.ceil(totalRecords / pageSize));
+
+  /* ② 随机页码（1 - totalPages） */
+  const randomPage = Math.floor(Math.random() * totalPages) + 1;
+
+  /* ③ 若随机页就是 1，复用数据；否则再请求一次 */
+  let data;
+  if (randomPage === 1) {
+    data = firstData;
+  } else {
+    const res = await fetch(baseURL + `&page=${randomPage}`);
+    if (!res.ok) throw 'V&A fetch failed';
+    data = await res.json();
+  }
+
+  /* ④ 取有图记录、洗牌、抽 10 张 */
+  const records = (data.records || []).filter(r => r._primaryImageId);
+  shuffle(records);
+
+  return records.slice(0,10).map(r => {
     const img = `https://framemark.vam.ac.uk/collections/${r._primaryImageId}/full/400,/0/default.jpg`;
-
-    // ✦ 多层保障标题 fallback
     const title =
       r._primaryTitle ||
       r.title ||
@@ -78,34 +98,53 @@ async function fetchVA(keyword){
       r.objectType ||
       '(object)';
 
-    // 简单描述优先展示 objectDescription
     const rawDesc = r.objectDescription?.[0] || {};
-    const desc = (rawDesc.value || rawDesc.text || '').trim();
+    const desc    = (rawDesc.value || rawDesc.text || '').trim();
 
     return { img, title, desc };
   });
 }
 
-/* ---------- Harvard fetch ---------- */
-async function fetchHAM(keyword){
-  if(HAM_API_KEY.startsWith('PASTE')) throw 'Set Harvard API key';
-  const url = `https://api.harvardartmuseums.org/object`
-            + `?apikey=${HAM_API_KEY}`
-            + `&size=100&hasimage=1`
-            + `&q=title:${encodeURIComponent(keyword)}`
-            + `&fields=primaryimageurl,title`;
-  const res = await fetch(url);
-  if(!res.ok) throw 'Harvard fetch failed';
-  const {records=[]} = await res.json();
 
-  const withImg = records.filter(r=>r.primaryimageurl);
-  shuffle(withImg);
-  return withImg.slice(0,10).map(r=>{
-      // 把超大原图降到 400px 宽
-      const small = r.primaryimageurl.replace('/full/full/0/','/full/400,/0/');
-      return { img: small, title: r.title||'Untitled', desc:'' };
-  });
+
+/* ---------- Harvard fetch ---------- */
+async function fetchHAM(keyword) {
+  if (HAM_API_KEY.startsWith('PASTE')) throw 'Set Harvard API key';
+
+  const baseURL = `https://api.harvardartmuseums.org/object`
+                + `?apikey=${HAM_API_KEY}`
+                + `&size=100&hasimage=1`
+                + `&q=title:${encodeURIComponent(keyword)}`
+                + `&fields=primaryimageurl,title`;
+
+  // 第一步：获取第一页，看看总页数是多少
+  const firstRes = await fetch(baseURL + `&page=1`);
+  if (!firstRes.ok) throw 'Harvard fetch failed';
+  const firstData = await firstRes.json();
+
+  const totalPages = firstData.info?.pages || 1;
+
+  // 第二步：随机选一页（注意最大不能超出页数）
+  const randomPage = Math.floor(Math.random() * totalPages) + 1;
+  const finalURL = baseURL + `&page=${randomPage}`;
+
+  let data;
+if (randomPage === 1) {
+  data = firstData;               // ✅ 已经解析过
+} else {
+  const finalRes = await fetch(finalURL);
+  data = await finalRes.json();
 }
+
+const records = (data.records || []).filter(r => r.primaryimageurl);
+shuffle(records);
+return records.slice(0, 10).map(r => ({
+  img  : r.primaryimageurl.replace('/full/full/0/', '/full/400,/0/'),
+  title: r.title || '(object)',
+  desc : ''
+}));
+}
+
 
 /* ---------- 工具 ---------- */
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}}
