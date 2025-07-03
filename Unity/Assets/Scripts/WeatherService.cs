@@ -18,15 +18,46 @@ public static class WeatherService
 
     // 天气 → 关键词映射
     private static readonly Dictionary<string, string[]> WeatherMap = new()
-    {
-        { "Clear",        new[]{ "sun", "bright", "summer" } },
-        { "Clouds",       new[]{ "cloud", "overcast" } },
-        { "Rain",         new[]{ "rain", "umbrella", "storm" } },
-        { "Thunderstorm", new[]{ "lightning", "storm" } },
-        { "Snow",         new[]{ "snow", "winter", "white" } },
-        { "Fog",          new[]{ "fog", "mist" } }
-        // 其它未列出的情况自动 fall back
-    };
+{
+    { "Clear", new[]
+        {
+            "sun", "sunlight", "sunshine", "bright", "golden", "clear sky",
+            "blue sky", "cheerful", "vibrant", "warm", "summer", "breeze", "serene",
+            "picnic", "outdoor", "shadow", "sunbeam", "radiant"
+        }
+    },
+    { "Clouds", new[]
+        {
+            "cloud", "overcast", "gray", "gloomy", "dull", "soft light", "moody",
+            "melancholy", "shadowy", "quiet", "cool tone", "diffused light"
+        }
+    },
+    { "Rain", new[]
+        {
+            "rain", "raindrop", "storm", "wet", "umbrella", "puddle", "drizzle",
+            "dark sky", "lonely", "melancholic", "raincoat", "reflection", "ripples"
+        }
+    },
+    { "Thunderstorm", new[]
+        {
+            "thunder", "lightning", "storm", "chaos", "dark", "dramatic", "flash",
+            "electric", "intense", "energy", "danger", "violence", "black clouds"
+        }
+    },
+    { "Snow", new[]
+        {
+            "snow", "snowflake", "blizzard", "winter", "white", "cold", "frost",
+            "ice", "quiet", "peaceful", "purity", "blanket", "stillness", "chill"
+        }
+    },
+    { "Fog", new[]
+        {
+            "fog", "mist", "haze", "blurred", "mysterious", "ghostly", "dreamy",
+            "hidden", "damp", "soft", "diffused", "twilight", "ethereal"
+        }
+    }
+};
+
 
     /// <summary>
     /// 获取天气关键词并返回完整天气数据

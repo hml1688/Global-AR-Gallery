@@ -60,4 +60,19 @@ public class ArtFrame : MonoBehaviour, IPointerClickHandler
         InfoPanel.Show(this);                     // ✅ 弹出信息面板
     }
 
+    //添加内存释放函数,防止在多次“换一批”（Refresh）之后占用过多内存
+public void ClearTexture()
+{
+    if (hiTex != null)
+    {
+        Destroy(hiTex);       // 释放贴图内存
+        hiTex = null;
+    }
+
+    SetTexture(null);         // 清除显示贴图
+    title = date = maker = place = "";
+    hiResUrl = "";
+}
+
+
 }

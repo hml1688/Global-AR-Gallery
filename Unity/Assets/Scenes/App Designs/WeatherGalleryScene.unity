@@ -1786,9 +1786,21 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 374143569}
-        m_TargetAssemblyTypeName: FloatingPanel, Assembly-CSharp
-        m_MethodName: OnRefresh
+      - m_Target: {fileID: 1059906191}
+        m_TargetAssemblyTypeName: WeatherGalleryManagerVA, Assembly-CSharp
+        m_MethodName: ReloadFromPrefs
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 961263870}
+        m_TargetAssemblyTypeName: WeatherGalleryManagerHarvard, Assembly-CSharp
+        m_MethodName: ReloadFromPrefs
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1852,7 +1864,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &374143568
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1890,8 +1902,8 @@ MonoBehaviour:
   yearFromInput: {fileID: 1845799027}
   yearToInput: {fileID: 538248779}
   toggleButton: {fileID: 422567695}
-  vaManager: {fileID: 1671656801}
-  harvardManager: {fileID: 1680569628}
+  vaManager: {fileID: 0}
+  harvardManager: {fileID: 0}
 --- !u!850595691 &389936720
 LightingSettings:
   m_ObjectHideFlags: 0
@@ -4546,6 +4558,53 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 939593140}
   m_CullTransparentMesh: 1
+--- !u!1 &961263868
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 961263869}
+  - component: {fileID: 961263870}
+  m_Layer: 0
+  m_Name: WeatherGalleryManagerHarvard
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &961263869
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 961263868}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 576.9434, y: 962.6034, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &961263870
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 961263868}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99eefa1ca377bbd4cb85057c2a8a4429, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pictureMat: {fileID: 2100000, guid: 84ce9e1c64c357c48b72c196b12007cd, type: 2}
+  statusText: {fileID: 276204146}
+  apiKey: d54e083e-a267-40e4-8d55-f1259589be3b
 --- !u!1 &1005790647
 GameObject:
   m_ObjectHideFlags: 0
@@ -4845,6 +4904,52 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: -1
   m_LayoutPriority: 1
+--- !u!1 &1059906189
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1059906190}
+  - component: {fileID: 1059906191}
+  m_Layer: 0
+  m_Name: WeatherGalleryManagerVA
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1059906190
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1059906189}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 576.9434, y: 962.6034, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1059906191
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1059906189}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9462a4a5e9d939c44b8436a09e515617, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pictureMat: {fileID: 2100000, guid: 84ce9e1c64c357c48b72c196b12007cd, type: 2}
+  statusText: {fileID: 428285862}
 --- !u!1 &1112829579
 GameObject:
   m_ObjectHideFlags: 0
@@ -5669,15 +5774,15 @@ MonoBehaviour:
   m_GameObject: {fileID: 1279101830}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6377ed94b86b22749b146b6df17a11e2, type: 3}
+  m_Script: {fileID: 11500000, guid: 5496580aad309a741b0fc7ab0abe6c52, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   galleryPrefab: {fileID: 6920230700908326755, guid: 25685472321fe15408fad81dcce01ca9,
     type: 3}
   xrOrigin: {fileID: 1279101835}
   holdSeconds: 0.4
-  vaManager: {fileID: 1671656801}
-  harvardManager: {fileID: 1680569628}
+  vaManager: {fileID: 1059906191}
+  harvardManager: {fileID: 961263870}
 --- !u!1 &1281348040
 GameObject:
   m_ObjectHideFlags: 0
@@ -6545,98 +6650,6 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
---- !u!1 &1671656800
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1671656802}
-  - component: {fileID: 1671656801}
-  m_Layer: 0
-  m_Name: VA_Manager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1671656801
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1671656800}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b04c49c6198ba48418bc63e40df6b22c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  pictureMat: {fileID: 2100000, guid: 84ce9e1c64c357c48b72c196b12007cd, type: 2}
-  statusText: {fileID: 428285862}
---- !u!4 &1671656802
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1671656800}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 550.34375, y: 1100.1488, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1680569627
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1680569629}
-  - component: {fileID: 1680569628}
-  m_Layer: 0
-  m_Name: Harvard_Manager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1680569628
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1680569627}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3b4b602d8ec61b54985f54fd886efbbe, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  pictureMat: {fileID: 2100000, guid: 84ce9e1c64c357c48b72c196b12007cd, type: 2}
-  statusText: {fileID: 276204146}
---- !u!4 &1680569629
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1680569627}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 651.7003, y: 476.65317, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1693929949
 GameObject:
   m_ObjectHideFlags: 0
@@ -8624,11 +8637,11 @@ SceneRoots:
   - {fileID: 70105065}
   - {fileID: 452361985}
   - {fileID: 1368345383}
-  - {fileID: 1671656802}
-  - {fileID: 1680569629}
   - {fileID: 1693929951}
   - {fileID: 1820462218}
   - {fileID: 263369783}
   - {fileID: 2140863745}
   - {fileID: 44661918}
   - {fileID: 1528811655}
+  - {fileID: 1059906190}
+  - {fileID: 961263869}
