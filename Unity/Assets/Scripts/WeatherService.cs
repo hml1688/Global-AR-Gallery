@@ -16,45 +16,79 @@ public static class WeatherService
 
     private static readonly System.Random rng = new System.Random();
 
+    /* ──── A. 归一化函数 ──── */
+    private static string NormalizeWeatherMain(string main)
+{
+    switch (main)
+    {
+        case "Drizzle": return "Rain";
+        case "Mist":
+        case "Haze":   return "Fog";
+        case "Smoke":
+        case "Dust":
+        case "Sand":
+        case "Ash":    return "Dust";
+        case "Squall":
+        case "Tornado":return "Squall";
+        default:       return main;
+    }
+}
+
     // 天气 → 关键词映射
     private static readonly Dictionary<string, string[]> WeatherMap = new()
 {
-    { "Clear", new[]
-        {
-            "sun", "sunlight", "sunshine", "bright", "golden", "clear sky",
-            "blue sky", "cheerful", "vibrant", "warm", "summer", "breeze", "serene",
-            "picnic", "outdoor", "shadow", "sunbeam", "radiant"
-        }
+    // 800 Clear
+    ["Clear"] = new[]
+    {
+        "sun", "sunshine", "sunlight", "bright", "golden", "blue sky", 
+        "warm", "summer", "picnic", "breeze", "sunlit", "glow", "dawn", "sunset"
     },
-    { "Clouds", new[]
-        {
-            "cloud", "overcast", "gray", "gloomy", "dull", "soft light", "moody",
-            "melancholy", "shadowy", "quiet", "cool tone", "diffused light"
-        }
+
+    // 80x Clouds
+    ["Clouds"] = new[]
+    {
+        "cloud", "gray", "soft light", "moody", "shadow",
+        "nimbus", "billowing", "pensive", "quiet"
     },
-    { "Rain", new[]
-        {
-            "rain", "raindrop", "storm", "wet", "umbrella", "puddle", "drizzle",
-            "dark sky", "lonely", "melancholic", "raincoat", "reflection", "ripples"
-        }
+
+    // 5xx Rain  (Drizzle 合并为子集)
+    ["Rain"] = new[]
+    {
+        "rain", "rainy", "wet", "umbrella", "puddle", 
+        "reflection", "ripple", "splatter", "storm clouds"
     },
-    { "Thunderstorm", new[]
-        {
-            "thunder", "lightning", "storm", "chaos", "dark", "dramatic", "flash",
-            "electric", "intense", "energy", "danger", "violence", "black clouds"
-        }
+
+    // 2xx Thunderstorm
+    ["Thunderstorm"] = new[]
+    {
+        "thunder", "lightning", "storm", "tempest", "electrical", "flash",
+        "dark sky", "dramatic", "roar", "black clouds", "energy", "explosive", "bolt"
     },
-    { "Snow", new[]
-        {
-            "snow", "snowflake", "blizzard", "winter", "white", "cold", "frost",
-            "ice", "quiet", "peaceful", "purity", "blanket", "stillness", "chill"
-        }
+
+    // 6xx Snow
+    ["Snow"] = new[]
+    {
+        "snow", "snowy", "frost", "ice","winter", "white", "powder", 
+        "icy", "stillness", "blanket", "crystal", "glacial", "drift"
     },
-    { "Fog", new[]
-        {
-            "fog", "mist", "haze", "blurred", "mysterious", "ghostly", "dreamy",
-            "hidden", "damp", "soft", "diffused", "twilight", "ethereal"
-        }
+
+    // Fog (= Mist + Fog + Haze)
+    ["Fog"] = new[]
+    {
+        "fog", "mist", "foggy", "blurred", "veil", "twilight", "shrouded", 
+        "obscured", "mysterious", "low cloud", "silvery"
+    },
+
+    // Dust (= Smoke + Dust + Sand + Ash)
+    ["Dust"] = new[]
+    {
+        "dust", "smoke", "ash", "sand", "sandy", "desert", "sepia", "grit", "volcano"
+    },
+
+    // Squall (= Squall + Tornado + violent wind)
+    ["Squall"] = new[]
+    {
+        "angry", "squall", "gale", "gust", "tornado", "hurricane", "typhoon", "storm"
     }
 };
 
@@ -106,16 +140,18 @@ public static class WeatherService
     // ---------- 4. 解析 JSON ----------
     string json = req.downloadHandler.text;
     WeatherResponse data = JsonUtility.FromJson<WeatherResponse>(json);
-    string cond = data.weather.Length > 0 ? data.weather[0].main : "Clear";
+    string rawMain = data.weather.Length > 0 ? data.weather[0].main : "Clear";
 
     // ---------- 5. 映射关键词 ----------
-    if (!WeatherMap.TryGetValue(cond, out var list))
-        list = WeatherMap["Clear"];
+    string main    = NormalizeWeatherMain(rawMain);
+    if (!WeatherMap.TryGetValue(main, out var list))
+    list = WeatherMap["Clear"];
 
+    // 6. 随机一个关键词
     string keyword = list[rng.Next(list.Length)];
     PlayerPrefs.SetString("WeatherKeyword", keyword);
 
-    // ---------- 6. 回调返回 ----------
+    // ---------- 7. 回调返回 ----------
     onDone?.Invoke(keyword, data);
 }
 
@@ -146,4 +182,3 @@ public static class WeatherService
 {
     public float speed;        // m/s
 }
-
