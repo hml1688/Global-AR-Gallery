@@ -42,7 +42,39 @@ if (rndPage != 1)
 
         /* 2️⃣ 过滤有图 → shuffle → 10 条 */
         var list = data.records.Where(r => !string.IsNullOrEmpty(r._primaryImageId)).ToList();
-        Shuffle(list); if (list.Count > WANT) list = list.GetRange(0, WANT);
+        Shuffle(list); 
+        /* ───── 补货逻辑开始 ───── */
+if (list.Count < WANT)              // < 10 张
+{
+    // 当前天气主类（WeatherService.FetchKeyword 已写入）
+    string main       = PlayerPrefs.GetString("WeatherMain", "Clear");
+    string fallbackKw = WeatherService.GetDefaultKeyword(main);
+
+    // 避免随机词本就是默认词时重复调 API
+    //若随机词本身就等于默认词，fallbackKw != keyword 会阻止重复请求。若补货后仍不足 10 张，就按实际数量展示，也不会崩溃。
+    if (fallbackKw != keyword)
+    {
+        string fbURL = $"https://api.vam.ac.uk/v2/objects/search" +
+                       $"?q={UnityWebRequest.EscapeURL(fallbackKw)}" +
+                       $"&image_exists=true&page_size={PAGE_SIZE}&responseGroup=full";
+
+        RootVA fb = null;
+        yield return StartCoroutine(YieldJson<RootVA>(fbURL + "&page=1", r => fb = r));
+
+        if (fb != null)
+        {
+            var extra = fb.records
+                          .Where(r => !string.IsNullOrEmpty(r._primaryImageId))
+                          .ToList();
+            Shuffle(extra);          // 保证补货也随机
+            list.AddRange(extra);
+        }
+    }
+}
+/* ───── 补货逻辑结束 ───── */
+
+/* 3️⃣ 最终只取 WANT 条 */
+if (list.Count > WANT) list = list.GetRange(0, WANT);
 
         /* 3️⃣ 直接按 Tag 找 10 个 ArtFrame */
         ArtFrame[] frames = GameObject.FindGameObjectsWithTag("ArtFrame")

@@ -92,6 +92,23 @@ public static class WeatherService
     }
 };
 
+// —— 每个 weather main 的「兜底关键词」——
+private static readonly Dictionary<string,string> DefaultKeyword = new()
+{
+    ["Clear"]        = "sun",
+    ["Clouds"]       = "cloud",
+    ["Rain"]         = "rain",
+    ["Thunderstorm"] = "storm",
+    ["Snow"]         = "snow",
+    ["Fog"]          = "fog",
+    ["Dust"]         = "sand",
+    ["Squall"]       = "storm"
+};
+
+// 公开一个小工具方法
+public static string GetDefaultKeyword(string main) =>
+    DefaultKeyword.TryGetValue(main, out var k) ? k : "sun";
+
 
     /// <summary>
     /// 获取天气关键词并返回完整天气数据
@@ -150,6 +167,7 @@ public static class WeatherService
     // 6. 随机一个关键词
     string keyword = list[rng.Next(list.Length)];
     PlayerPrefs.SetString("WeatherKeyword", keyword);
+    PlayerPrefs.SetString("WeatherMain",   main);      // 储存NormalizeWeatherMain 后的结果 main，方便 Manager 读取
 
     // ---------- 7. 回调返回 ----------
     onDone?.Invoke(keyword, data);

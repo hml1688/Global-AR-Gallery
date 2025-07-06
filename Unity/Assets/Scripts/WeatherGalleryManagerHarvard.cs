@@ -38,7 +38,36 @@ public class WeatherGalleryManagerHarvard : MonoBehaviour
             yield return StartCoroutine(GetJson<RootHAM>(baseURL+$"&page={rnd}", r=>data=r));
 
         var list = data.records.Where(r=>!string.IsNullOrEmpty(r.primaryimageurl)).ToList();
-        Shuffle(list); if(list.Count>WANT) list=list.GetRange(0,WANT);
+        Shuffle(list); 
+        /* ───── 补货逻辑开始 ───── */
+        // list 已经是第一次 keyword 查询后的结果
+if (list.Count < WANT)
+{
+    string main = PlayerPrefs.GetString("WeatherMain", "Clear");
+    string fallbackKw = WeatherService.GetDefaultKeyword(main);
+
+    if (fallbackKw != kw)      // 避免重复
+    {
+        string fbURL = $"https://api.harvardartmuseums.org/object" +
+                       $"?apikey={apiKey}&hasimage=1&size={PAGE_SIZE}&sort=random" +
+                       $"&q=title:{UnityWebRequest.EscapeURL(fallbackKw)}" +
+                       $"&fields={FIELDS}";
+
+        RootHAM fb = null;
+        yield return StartCoroutine(GetJson<RootHAM>(fbURL + "&page=1", r => fb = r));
+        if (fb != null)
+        {
+            var extra = fb.records
+                          .Where(r => !string.IsNullOrEmpty(r.primaryimageurl))
+                          .ToList();
+            Shuffle(extra);
+            list.AddRange(extra);
+        }
+    }
+}
+
+if (list.Count > WANT) list = list.GetRange(0, WANT);
+
 
         ArtFrame[] frames = GameObject.FindGameObjectsWithTag("ArtFrameHarvard")
                              .OrderBy(g=>g.name)
