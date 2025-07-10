@@ -604,7 +604,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.1
-  far clip plane: 40
+  far clip plane: 80
   field of view: 60
   orthographic: 0
   orthographic size: 5
@@ -5509,6 +5509,7 @@ GameObject:
   - component: {fileID: 1279101831}
   - component: {fileID: 1279101836}
   - component: {fileID: 1279101837}
+  - component: {fileID: 1279101838}
   m_Layer: 0
   m_Name: XR Origin (Mobile AR)
   m_TagString: Untagged
@@ -5622,6 +5623,19 @@ MonoBehaviour:
   holdSeconds: 0.4
   vaManager: {fileID: 1059906191}
   harvardManager: {fileID: 961263870}
+--- !u!114 &1279101838
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1279101830}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7bb51f30d4913134081dadddecec72cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveFactor: 0.01
 --- !u!1 &1281348040
 GameObject:
   m_ObjectHideFlags: 0
