@@ -8,7 +8,7 @@ public class WeatherEffectController : MonoBehaviour
     Dictionary<string, string> map = new()
     {
         {"Clear","FX_Sun"},
-        {"Clouds","FX_Rain"},
+        {"Clouds","FX_Cloud"},
         {"Rain","FX_Rain"},
         {"Snow","FX_Snow"},
         {"Fog","FX_Sand"},
