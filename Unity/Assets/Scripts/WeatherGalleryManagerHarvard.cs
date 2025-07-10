@@ -104,6 +104,7 @@ for (int i = 0; i < frames.Length && i < list.Count; i++)
         StopAllCoroutines();
         string kw = PlayerPrefs.GetString("WeatherKeyword","sun");
         StartCoroutine(LoadWeatherGallery(kw));
+        FindObjectOfType<WeatherKeywordBanner>()?.UpdateKeyword(kw);
     }
 
     /* -------- 工具同前 -------- */

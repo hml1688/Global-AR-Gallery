@@ -52,6 +52,11 @@ public class TapToPlaceWeather : MonoBehaviour
             return;
         }
 
+        // NEW: hand over the current weather
+        string currentMain = PlayerPrefs.GetString("WeatherMain", "Clear");
+        galleryInstance.GetComponentInChildren<WeatherEffectController>()
+        ?.ShowWeather(currentMain);
+
         // ③ 朝向摄像机：入口朝向用户
         Vector3 camPos = Camera.main.transform.position;
         Vector3 fwd = (camPos - hitPose.position); fwd.y = 0;

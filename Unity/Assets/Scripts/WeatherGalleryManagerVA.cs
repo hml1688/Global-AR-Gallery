@@ -104,6 +104,7 @@ if (list.Count > WANT) list = list.GetRange(0, WANT);
         StopAllCoroutines();
         string kw = PlayerPrefs.GetString("WeatherKeyword", "sun");
         StartCoroutine(LoadWeatherGallery(kw));
+        FindObjectOfType<WeatherKeywordBanner>()?.UpdateKeyword(kw);
     }
 
     /* ------------ 工具 ------------ */
