@@ -80,6 +80,16 @@ public class TapToPlaceGallery : MonoBehaviour
             Debug.LogError("❌ 场景中未找到 GalleryManager 脚本！");
         }
 
+        // ✅ ⑥ 放置完毕后隐藏辅助平面点
+        ARPlaneManager planeManager = FindObjectOfType<ARPlaneManager>();
+        if (planeManager != null)
+        {
+            foreach (var plane in planeManager.trackables)
+            // 关闭已有 plane
+            plane.gameObject.SetActive(false); 
+            planeManager.enabled = false;             // 停止后续识别
+            }
+            
         // ④ 放好后禁用脚本避免重复放置
         enabled = false;
     }

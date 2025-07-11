@@ -57,7 +57,15 @@ public class ArtFrame : MonoBehaviour, IPointerClickHandler
     public void OnPointerClick(PointerEventData eventData)
     {
         DebugHelper.Show($"Clicked {title}");     // ✅ 屏幕显示文字
-        InfoPanel.Show(this);                     // ✅ 弹出信息面板
+        // ① 优先找 Weather 版面板
+    if (InfoPanelWeatherExists())
+    {
+        InfoPanelWeather.Show(this);      // WeatherGalleryScene 使用
+    }
+    else
+    {
+        InfoPanel.Show(this);             // Explore 方向使用
+    }
     }
 
     //添加内存释放函数,防止在多次“换一批”（Refresh）之后占用过多内存
@@ -72,6 +80,13 @@ public void ClearTexture()
     SetTexture(null);         // 清除显示贴图
     title = date = maker = place = "";
     hiResUrl = "";
+}
+
+/* ---------- 判断场景里是否有 Weather 版面板 ---------- */
+bool InfoPanelWeatherExists()
+{
+    // 场景中是否存在激活的 InfoPanelWeather 单例
+    return FindObjectOfType<InfoPanelWeather>(includeInactive: false) != null;
 }
 
 

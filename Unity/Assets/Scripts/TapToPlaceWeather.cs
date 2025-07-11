@@ -72,6 +72,16 @@ public class TapToPlaceWeather : MonoBehaviour
         if (vaManager)      StartCoroutine(vaManager.LoadWeatherGallery(kw));
         if (harvardManager) StartCoroutine(harvardManager.LoadWeatherGallery(kw));
 
+        // ✅ ⑥ 放置完毕后隐藏辅助平面点
+        ARPlaneManager planeManager = FindObjectOfType<ARPlaneManager>();
+        if (planeManager != null)
+        {
+            foreach (var plane in planeManager.trackables)
+            // 关闭已有 plane
+            plane.gameObject.SetActive(false); 
+            planeManager.enabled = false;             // 停止后续识别
+    }
+
         // ⑥ 放置完毕，禁用脚本
         enabled = false;
     }
