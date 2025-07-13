@@ -254,7 +254,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: How ArtScope works?
+  m_text: How AR Gallery works?
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -655,7 +655,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "From the homepage, select your preferred gallery experience:\n\n(1) Explore
+  m_text: "From the homepage, select your preferred gallery experience:\n\n(1) Global
     Gallery: Pick a region (e.g., Europe, Asia) and set your desired historical period
     (e.g., 1900\u20131950), then tap \u201CGenerate Gallery\u201D.\n\n(2)Weather
     Gallery: Let the app detect your current weather conditions automatically, then

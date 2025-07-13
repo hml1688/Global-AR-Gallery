@@ -89,11 +89,14 @@ if (list.Count > WANT) list = list.GetRange(0, WANT);
             string imgUrl = $"https://framemark.vam.ac.uk/collections/{list[i]._primaryImageId}/full/400,/0/default.jpg";
             yield return StartCoroutine(SetTexture(frames[i], imgUrl));
 
-            frames[i].title =
-                list[i]._primaryTitle ??
-                list[i].title ??
-                list[i]._primaryObjectName ??
-                list[i].objectType ?? "(object)";
+            frames[i].title = FirstNonEmpty("(object)",
+            list[i]._primaryTitle,
+            list[i].title,
+            list[i]._primaryObjectName,
+            list[i].objectType
+            );
+
+
         }
         if (statusText) statusText.text = "Done";
     }
@@ -144,4 +147,13 @@ if (list.Count > WANT) list = list.GetRange(0, WANT);
         public string _primaryImageId,_primaryTitle,title,_primaryObjectName,objectType;
     }
     [System.Serializable] public class RootVA      { public Info info; public RecordVA[] records; }
+
+    static string FirstNonEmpty(string fallback, params string[] ss)
+{
+    foreach (var s in ss)
+        if (!string.IsNullOrWhiteSpace(s)) return s.Trim();
+    return fallback;
+}
+
+
 }

@@ -23,13 +23,16 @@ public class GalleryManagerHarvard : MonoBehaviour
     const int WANT = 10;
     const int PAGE_SIZE = 100;
     const int MAX_COUNTRY = 30;
+    // 并发抓取的国家数（不要太大，防止 API 限速）
+    const int PARALLEL_COUNTRIES = 6;
+    int activeJobs = 0;
 
     // 与 JS 相同的区域字典（可精简）
     readonly Dictionary<string, string[]> REGION = new()
     {
         ["Europe"] = new[]{"France","Germany","Italy","United Kingdom","England",
                            "Netherlands","Spain","Sweden","Russia","Greece","Austria",
-                           "Belgium","Denmark","Ireland","Malta","Norway","Portugal","Switherland"},
+                           "Belgium","Denmark","Ireland","Malta","Norway","Portugal","Switzerland"},
         ["North and central America"] = new[]{"United States","USA","Mexico","Canada",
                            "Guatemala","Cuba","Costa Rica","Panama","Greenland"},
         ["Asia"] = new[]{"China","Japan","India","Korea","Iran","Turkey","Thailand",
@@ -68,22 +71,26 @@ public class GalleryManagerHarvard : MonoBehaviour
         foreach (var f in frames) f.hiTex = null;
 
         // 2. 拉取 10 条数据
-        List<JToken> artworks = new();
-        var countries = new List<string>(REGION[region]);
-        Shuffle(countries);
+        List<string> countries = new List<string>(REGION[region]);
+    Shuffle(countries);                         // ★ 打乱国家顺序（保持随机）
 
-        foreach (var c in countries.Take(MAX_COUNTRY))
+    List<Coroutine> running = new List<Coroutine>();
+    List<JToken>    artworks = new List<JToken>();
+
+    foreach (string c in countries.Take(MAX_COUNTRY))
         {
+            while (activeJobs >= PARALLEL_COUNTRIES)
+                yield return null;
+
+            activeJobs++;
+            StartCoroutine(FetchOneCountry(c, fromY, toY, artworks));
+
             if (artworks.Count >= WANT) break;
-            yield return StartCoroutine(FetchOneCountry(c, fromY, toY, artworks));
         }
 
-        if (artworks.Count == 0)
-        {
-            if (statusText) statusText.text = "No Harvard artworks";
-            yield break;
-        }
-        Shuffle(artworks);
+    /* —— 等待所有仍在跑的国家协程结束，或已经拼够 10 幅 —— */
+    while (activeJobs > 0 && artworks.Count < WANT)
+            yield return null;
 
         // 3. 绑定到画框
         // 先初始化 loaded 计数
@@ -131,55 +138,128 @@ public class GalleryManagerHarvard : MonoBehaviour
     }
 
     // ---------- 协程：请求一个国家 ----------
-    IEnumerator FetchOneCountry(string country, int f, int t, List<JToken> store)
+    /* 把一整个国家能贡献的作品尽量塞进 store，直到：
+   ▶ store ≥ WANT，或 ▶ 用时 >7 秒 */
+IEnumerator FetchOneCountry(string country, int fromY, int toY, List<JToken> store)
 {
-    // ---------- 0) 计时器 ----------
-    const int MAX_TIME_MS = 7000;
-    float t0 = Time.realtimeSinceStartup * 1000f;   // 开始毫秒
+    // ◆ 进入协程就打日志，并把 activeJobs++ 已在 LoadGallery 里做了 ◆
+    DebugHelper.Show($"▶ {country}: start", 3f);
 
-    // ---------- 1) 取 placeId ----------
-    string pid = null;
-    string urlPlace = $"https://api.harvardartmuseums.org/place?apikey={APIKEY}&size=1&q={UnityWebRequest.EscapeURL(country)}";
-    var reqPlace = UnityWebRequest.Get(urlPlace);
-    reqPlace.timeout = 7;                       // ★ 7 秒超时
-    yield return reqPlace.SendWebRequest();
-    if (reqPlace.result == UnityWebRequest.Result.Success)
+    // 为了保证无论如何都能 activeJobs--，用 try/finally
+    try
     {
-        var pj = JToken.Parse(reqPlace.downloadHandler.text);
-        pid = pj["records"]?[0]?["id"]?.ToString();
-    }
-    if (string.IsNullOrEmpty(pid)) yield break;
-
-    // ---------- 2) 分页拉 object ----------
-    int page = 1;
-    while (store.Count < WANT && (Time.realtimeSinceStartup * 1000f - t0) < MAX_TIME_MS)
-    {
-        string fields = "id,title,dated,people,place,places,primaryimageurl,images,iiifbaseuri";
-        string urlObj = $"https://api.harvardartmuseums.org/object?apikey={APIKEY}&place={pid}"
-                      + $"&hasimage=1&size={PAGE_SIZE}&page={page}"
-                      + $"&fromdate={f}&todate={t}&fields={fields}";
-
-        var reqObj = UnityWebRequest.Get(urlObj);
-        reqObj.timeout = 7;                     // ★ 7 秒超时
-        yield return reqObj.SendWebRequest();
-        if (reqObj.result != UnityWebRequest.Result.Success) break;
-
-        var oj = JToken.Parse(reqObj.downloadHandler.text);
-        var recs = oj["records"] ?? new JArray();
-
-        foreach (var r in recs)
+        // —— 0. placeId
+        string pid = null;
+        string urlPlace = $"https://api.harvardartmuseums.org/place?apikey={APIKEY}"
+                        + $"&size=1&q={UnityWebRequest.EscapeURL(country)}";
+        using var reqP = UnityWebRequest.Get(urlPlace);
+        reqP.timeout = 7;
+        yield return reqP.SendWebRequest();
+        if (reqP.result == UnityWebRequest.Result.Success)
+            pid = JToken.Parse(reqP.downloadHandler.text)["records"]?[0]?["id"]?.ToString();
+        if (string.IsNullOrEmpty(pid))
         {
-            if (store.Count >= WANT) break;
-            if (r["primaryimageurl"] == null) continue;
-            if (!DateWithin(r["dated"]?.ToString(), f, t)) continue;
-            store.Add(r);
+            DebugHelper.Show($"✖ {country}: no placeId", 2f);
+            yield break;
         }
 
-        // 到尾页或时间超时就停
-        if (recs.Count() < PAGE_SIZE) break;
-        page += 1;
+        // —— 1. 先抓 page=1 拿 pages & firstRecs
+        int totalPages = 1;
+        List<JToken> firstRecs = null;
+        yield return StartCoroutine(GetPage(pid, 1, fromY, toY,
+            (pages, recs) => {
+                totalPages = pages;
+                firstRecs  = recs;
+            }));
+        if (firstRecs == null)
+        {
+            DebugHelper.Show($"✖ {country}: page1 failed", 2f);
+            yield break;
+        }
+        DebugHelper.Show($"✔ {country}: pages={totalPages}", 2f);
+
+        // —— 2. 处理第 1 页
+        Shuffle(firstRecs);
+        foreach (var r in firstRecs)
+        {
+            if (store.Count >= WANT) break;
+            if (!HasImage(r)) continue;
+            if (!DateWithin(r["dated"]?.ToString(), fromY, toY)) continue;
+            store.Add(r);
+        }
+        DebugHelper.Show($"ℹ {country}: after p1 → {store.Count}/{WANT}", 2f);
+        if (store.Count >= WANT) yield break;
+
+        // —— 3. 顺序拉其余页，直到凑够 or 超时
+        const int MAX_MS = 7000;
+        float t0 = Time.realtimeSinceStartup * 1000f;
+        for (int page = 2; page <= totalPages; page++)
+        {
+            if (Time.realtimeSinceStartup * 1000f - t0 > MAX_MS)
+            {
+                DebugHelper.Show($"⏱ {country}: timeout", 2f);
+                break;
+            }
+
+            List<JToken> recs = null;
+            yield return StartCoroutine(GetPage(pid, page, fromY, toY,
+                (__, list) => recs = list));
+            if (recs == null) continue;
+
+            Shuffle(recs);
+            foreach (var r in recs)
+            {
+                if (store.Count >= WANT) break;
+                if (!HasImage(r)) continue;
+                if (!DateWithin(r["dated"]?.ToString(), fromY, toY)) continue;
+                store.Add(r);
+            }
+            DebugHelper.Show($"ℹ {country}: after p{page} → {store.Count}/{WANT}", 2f);
+            if (store.Count >= WANT) break;
+        }
+    }
+    finally
+    {
+        // ◆ 一定要 activeJobs-- ◆
+        activeJobs--;
+        DebugHelper.Show($"◀ {country}: done", 2f);
     }
 }
+
+
+/* ---------- 抓单页：GetPage ---------- */
+IEnumerator GetPage(string pid, int page, int f, int t,
+                    System.Action<int, List<JToken>> cb)
+{
+    string fields = "id,title,dated,people,place,places,primaryimageurl,images,iiifbaseuri";
+    string url = $"https://api.harvardartmuseums.org/object?apikey={APIKEY}" +
+                 $"&place={pid}&hasimage=1&size={PAGE_SIZE}&page={page}" +
+                 $"&fromdate={f}&todate={t}&fields={fields}";
+
+    using var req = UnityWebRequest.Get(url);
+    req.timeout = 7;
+    yield return req.SendWebRequest();
+
+    if (req.result != UnityWebRequest.Result.Success)
+    {
+        cb?.Invoke(1, null);          // 至少把 pages=1 回去，records=null
+        yield break;
+    }
+
+    var jo     = JToken.Parse(req.downloadHandler.text);
+    int pages  = jo["info"]?["pages"]?.ToObject<int>() ?? 1;
+    var recs   = jo["records"]?.ToList() ?? new List<JToken>();
+
+    cb?.Invoke(pages, recs);
+}
+
+/* 判断记录是否真的有图（包括 secureimageurl） */
+static bool HasImage(JToken r) =>
+        r["secureimageurl"] != null
+     || r["primaryimageurl"] != null
+     || r["images"]?.Any(img => img["baseimageurl"] != null) == true
+     || r["images"]?[0]?["baseimageurl"] != null;
+
 
 
     // ======== 模糊日期解析 =========

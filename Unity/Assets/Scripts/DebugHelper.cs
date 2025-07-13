@@ -17,7 +17,7 @@ public class DebugHelper : MonoBehaviour
             debugText.text = "";   // 超时清除
     }
 
-    public static void Show(string msg, float duration = 2f)
+    public static void Show(string msg, float duration = 3f)
     {
         if (debugText)
         {
