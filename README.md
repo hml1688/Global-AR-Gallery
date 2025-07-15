@@ -14,7 +14,11 @@ Through its innovative **"Weather Gallery" feature**, the project also demonstra
 
 ---
 
-## 📲 Download the App
+## 📲 Get the App
+
+👉 🔗 [Project Website](#)
+
+👉 🎥 [Project Video](https://youtu.be/9Vd4wS8uuVY)
 
 👉 [Download APK (v1.0)](https://github.com/hml1688/Global-AR-Gallery/releases/tag/v1.0)
 
@@ -74,7 +78,6 @@ This project uses open-access APIs to retrieve artwork and environmental data:
 Developed by **Jennie Hao**  
 🎓 MSc Connected Environments · University College London  
 📧 [Email me](ucfnaoa@ucl.ac.uk)  
-🔗 [Project Website](#)
 
 ---
 
