@@ -38,11 +38,11 @@ Through its innovative **"Weather Gallery" feature**, the project also demonstra
 
 | Global Gallery Selection | AR Museum Placement | Artwork Details |
 |--------------------------|---------------------|-----------------|
-| ![Keyword](assets/keyword-global.jpg) | ![Placement](assets/globalgalleryview.jpg) | ![Details](assets/globaldetails.jpg) |
+| ![Keyword](https://github.com/hml1688/Global-AR-Gallery/blob/main/Images/keyword-global.jpg) | ![Placement](https://github.com/hml1688/Global-AR-Gallery/blob/main/Images/globalgalleryview.jpg) | ![Details](https://github.com/hml1688/Global-AR-Gallery/blob/main/Images/globaldetails.jpg) |
 
 | Weather-Based Keywords | Weather Effects in Action | Weather-Driven Exhibition |
 |------------------------|---------------------------|---------------------------|
-| ![Keywords](assets/weahter-keyword.jpg) | ![Effects](assets/weahter-effect1.gif) | ![Weather Gallery](assets/weahter%20gallery.jpg) |
+| ![Keywords](https://github.com/hml1688/Global-AR-Gallery/blob/main/Images/weahter-keyword.jpg) | ![Effects](https://github.com/hml1688/Global-AR-Gallery/blob/main/Images/weahter-effect5.gif) | ![Weather Gallery](https://github.com/hml1688/Global-AR-Gallery/blob/main/Images/weahter%20gallery.jpg) |
 
 ---
 
@@ -71,9 +71,9 @@ This project uses open-access APIs to retrieve artwork and environmental data:
 
 ## 🙋 About the Creator
 
-Developed by **Jiajie Hao**  
+Developed by **Jennie Hao**  
 🎓 MSc Connected Environments · University College London  
-📧 [Email me](mailto:your@email.com)  
+📧 [Email me](ucfnaoa@ucl.ac.uk)  
 🔗 [Project Website](#)
 
 ---
