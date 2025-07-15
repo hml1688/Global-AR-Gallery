@@ -18,7 +18,7 @@ Through its innovative **"Weather Gallery" feature**, the project also demonstra
 
 👉 🔗 [Project Website](#)
 
-👉 🎥 [Project Video](https://youtu.be/9Vd4wS8uuVY)
+👉 🎥 [Project Video](https://youtu.be/PBGzaap1sm8)
 
 👉 [Download APK (v1.0)](https://github.com/hml1688/Global-AR-Gallery/releases/tag/v1.0)
 
