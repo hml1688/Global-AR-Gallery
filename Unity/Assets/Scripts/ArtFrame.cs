@@ -25,6 +25,14 @@ public class ArtFrame : MonoBehaviour, IPointerClickHandler
     var mat = paintingRenderer.material;        // 实例材质
     mat.mainTexture = tex;
 
+    // ✅ 若为空贴图（比如 ClearTexture 或下载失败）→ 重置 wrapMode、缩放、偏移
+    if (tex == null)
+    {
+        mat.mainTextureScale  = Vector2.one;
+        mat.mainTextureOffset = Vector2.zero;
+        return;
+    }
+
     // ✅ 修正：设置的是贴图的 wrapMode
     tex.wrapMode = TextureWrapMode.Clamp;
 

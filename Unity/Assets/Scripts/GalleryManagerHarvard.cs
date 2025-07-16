@@ -8,8 +8,15 @@ using TMPro;
 using System;
 using System.Text.RegularExpressions;
 
+
 public class GalleryManagerHarvard : MonoBehaviour
 {
+    static void HUD(string msg, float sec = 3f)
+{
+    Debug.Log(msg);
+    DebugHelper.Show(msg, sec);
+}
+
     [Header("Picture material (Unlit/Texture)")]
     public Material pictureMat;
 
@@ -48,7 +55,9 @@ public class GalleryManagerHarvard : MonoBehaviour
                                      "Fiji","Papua New Guinea","Tahiti","Marquesas Islands"}
     };
 
-    void Start() => StartCoroutine(LoadGallery());
+    //void Start() => StartCoroutine(LoadGallery());
+    void Start(){}
+
 
     IEnumerator LoadGallery()
     {
@@ -88,14 +97,32 @@ public class GalleryManagerHarvard : MonoBehaviour
             if (artworks.Count >= WANT) break;
         }
 
-    /* —— 等待所有仍在跑的国家协程结束，或已经拼够 10 幅 —— */
-    while (activeJobs > 0 && artworks.Count < WANT)
-            yield return null;
+    // —— 等所有国家抓完，强制最多等 500 帧
+int waitLoops = 0;
+while (activeJobs > 0)
+{
+    yield return null;
+    waitLoops++;
+    HUD($" Waiting... activeJobs = {activeJobs}", 1f);
+
+    if (waitLoops > 500) // 比如最多等待 500 帧
+    {
+        HUD("⚠️ Force exit wait! activeJobs未归零", 5f);
+        break;
+    }
+}
+
+        HUD($" Pre-bind counts: artworks={artworks.Count}", 3f);
+        yield return new WaitForSeconds(3f);
+        HUD($" region={region}  fromY={fromY}  toY={toY}", 3f);
+            // 可选：打乱全局 artworks 顺序
+Shuffle(artworks);
+
 
         // 3. 绑定到画框
         // 先初始化 loaded 计数
-        int loaded = 0;
-        for (int i = 0; i < frames.Length && i < artworks.Count; i++)
+        // int loaded = 0;
+        /*for (int i = 0; i < frames.Length && i < artworks.Count; i++)
         {
             var rec = artworks[i];
 
@@ -104,31 +131,88 @@ public class GalleryManagerHarvard : MonoBehaviour
             if (string.IsNullOrEmpty(thumb)) continue;
 
             string iiif  = rec["images"]?[0]?["iiifbaseuri"]?.ToString();
-            string hiUrl = !string.IsNullOrEmpty(iiif) ? $"{iiif}/full/!1024,1024/0/default.jpg" : thumb;
+            string hiUrl = !string.IsNullOrEmpty(iiif) ? $"{iiif}/full/!1024,1024/0/default.jpg" : thumb;*/
+        
+        // ====== 第一轮：在线记录填框（while-补位） ======
+int loaded = 0;
+int idx    = 0;
+while (loaded < frames.Length && idx < artworks.Count)
+{
+    var rec = artworks[idx++];
+    GetHamUrls(rec, out string thumb, out string hiUrl);
+    HUD($"idx={idx-1}, thumb={thumb}", 2f); // 加一句
+    if (string.IsNullOrEmpty(thumb)) continue;
 
-            // 下载缩略图
-            UnityWebRequest texReq = UnityWebRequestTexture.GetTexture(thumb);
-            yield return texReq.SendWebRequest();
-            if (texReq.result != UnityWebRequest.Result.Success) continue;
+    using UnityWebRequest texReq = UnityWebRequestTexture.GetTexture(thumb);
+    yield return texReq.SendWebRequest();
+    if (texReq.result != UnityWebRequest.Result.Success)
+    {
+    DebugHelper.Show($"❌ Img fail: {texReq.error}\n{thumb}", 3f);
+    continue;
+}
 
-            Texture tex = DownloadHandlerTexture.GetContent(texReq);
-            frames[i].paintingRenderer.sharedMaterial = new Material(pictureMat);
-            frames[i].SetTexture(tex);
+    Texture tex = DownloadHandlerTexture.GetContent(texReq);
+    var f = frames[loaded];
+    f.paintingRenderer.sharedMaterial = new Material(pictureMat);
+    f.SetTexture(tex);
 
-            frames[i].hiResUrl = hiUrl;
-            frames[i].title    = rec["title"]?.ToString() ?? "(object)";
-            frames[i].date     = rec["dated"]?.ToString() ?? "";
-            frames[i].maker    = rec["people"]?[0]?["displayname"]?.ToString() ?? "";
-            frames[i].place    = rec["place"]?.ToString() ??
-                                 rec["places"]?[0]?["displayname"]?.ToString() ?? "Unknown";
-            frames[i].hiTex    = tex; // 缓存缩略图
+    f.hiResUrl = hiUrl;
+    f.title    = rec["title"]?.ToString() ?? "(object)";
+    f.date     = rec["dated"]?.ToString() ?? "";
+    f.maker    = rec["people"]?[0]?["displayname"]?.ToString() ?? rec["maker"]?.ToString() ?? "";
+    f.place    = rec["place"]?.ToString() ??
+                 rec["places"]?[0]?["displayname"]?.ToString() ??
+                 "Unknown";
+    f.hiTex    = tex;
 
-            // —— 在这里递增 loaded 并更新文本 —— 
-            loaded++;
-            if (statusText) {
-            statusText.text = $"HAM Loaded {loaded}/{WANT}";
-            }
-        }
+    loaded++;
+    if (statusText) statusText.text = $"HAM Loaded {loaded}/{WANT}";
+}
+
+HUD($"📌 Checking offline fallback: loaded={loaded}, region={region}, fromY={fromY}, toY={toY}", 3f);
+
+
+// ====== 第二轮：离线补货（如 Asia + 年代交集 + 未满） ======
+if (loaded < WANT && region == "Asia" && !(toY < 2000 || fromY > 2025))
+{
+    yield return OfflineHamAsia.EnsureLoaded();
+    int need = WANT - loaded;
+    var picks = OfflineHamAsia.Pick(fromY, toY, need);
+    // ✅ 这里添加 HUD 查看 pick 到了多少条
+HUD($"🟩 Offline picks={picks.Count}", 3f);
+
+    foreach (var recObj in picks)
+    {
+        var rec = OfflineHamAsia.ToJObj(recObj);
+        GetHamUrls(rec, out string thumb, out string hiUrl);
+        if (string.IsNullOrEmpty(thumb)) continue;
+
+        using UnityWebRequest texReq = UnityWebRequestTexture.GetTexture(thumb);
+        yield return texReq.SendWebRequest();
+        if (texReq.result != UnityWebRequest.Result.Success) 
+        {
+    DebugHelper.Show($"❌ Img fail: {texReq.error}\n{thumb}", 3f);
+    continue;
+}
+
+        Texture tex = DownloadHandlerTexture.GetContent(texReq);
+        var f = frames[loaded];
+        f.paintingRenderer.sharedMaterial = new Material(pictureMat);
+        f.SetTexture(tex);
+        f.hiResUrl = hiUrl;
+        f.title    = rec["title"]?.ToString() ?? "(object)";
+        f.date     = rec["dated"]?.ToString() ?? "";
+        f.maker    = rec["maker"]?.ToString() ?? "";
+        f.place    = rec["place"]?.ToString() ?? "Asia";
+        f.hiTex    = tex;
+
+        loaded++;
+        if (statusText) statusText.text = $"HAM Loaded {loaded}/{WANT}";
+        if (loaded >= WANT) break;
+    }
+
+    DebugHelper.Show($"Offline fallback: added {Mathf.Min(need, picks.Count)} Asia recs ({fromY}–{toY})", 3f);
+}
 
         if (statusText) {
     statusText.text = "Done";
@@ -142,41 +226,60 @@ public class GalleryManagerHarvard : MonoBehaviour
    ▶ store ≥ WANT，或 ▶ 用时 >7 秒 */
 IEnumerator FetchOneCountry(string country, int fromY, int toY, List<JToken> store)
 {
-    // ◆ 进入协程就打日志，并把 activeJobs++ 已在 LoadGallery 里做了 ◆
-    DebugHelper.Show($"▶ {country}: start", 3f);
+    float start = Time.realtimeSinceStartup;
+    float timeout = 10f; // 最多10秒
 
-    // 为了保证无论如何都能 activeJobs--，用 try/finally
-    try
+    try // 只用 try-finally！不要 try-catch-finally
     {
+        HUD($"▶ Start country: {country}", 2f);
+
         // —— 0. placeId
         string pid = null;
         string urlPlace = $"https://api.harvardartmuseums.org/place?apikey={APIKEY}"
                         + $"&size=1&q={UnityWebRequest.EscapeURL(country)}";
-        using var reqP = UnityWebRequest.Get(urlPlace);
-        reqP.timeout = 7;
-        yield return reqP.SendWebRequest();
-        if (reqP.result == UnityWebRequest.Result.Success)
-            pid = JToken.Parse(reqP.downloadHandler.text)["records"]?[0]?["id"]?.ToString();
+        using (var reqP = UnityWebRequest.Get(urlPlace))
+        {
+            reqP.timeout = 7;
+            yield return reqP.SendWebRequest();
+
+            if (reqP.result != UnityWebRequest.Result.Success)
+            {
+                HUD($"❌ 网络失败: {country} {reqP.error}", 2f);
+                yield break; // finally会执行
+            }
+            // JSON 解析 try-catch（不能有yield）
+            try
+            {
+                pid = JToken.Parse(reqP.downloadHandler.text)["records"]?[0]?["id"]?.ToString();
+            }
+            catch (Exception ex)
+            {
+                HUD($"❌ JSON解析失败: {country}\n{ex}", 2f);
+                yield break;
+            }
+        }
+
         if (string.IsNullOrEmpty(pid))
         {
-            DebugHelper.Show($"✖ {country}: no placeId", 2f);
+            HUD($" No placeId: {country}", 2f);
             yield break;
         }
 
         // —— 1. 先抓 page=1 拿 pages & firstRecs
         int totalPages = 1;
         List<JToken> firstRecs = null;
+        bool page1Fail = false;
         yield return StartCoroutine(GetPage(pid, 1, fromY, toY,
             (pages, recs) => {
                 totalPages = pages;
-                firstRecs  = recs;
+                firstRecs = recs;
             }));
+
         if (firstRecs == null)
         {
-            DebugHelper.Show($"✖ {country}: page1 failed", 2f);
+            HUD($"No records in page 1: {country}", 2f);
             yield break;
         }
-        DebugHelper.Show($"✔ {country}: pages={totalPages}", 2f);
 
         // —— 2. 处理第 1 页
         Shuffle(firstRecs);
@@ -185,9 +288,13 @@ IEnumerator FetchOneCountry(string country, int fromY, int toY, List<JToken> sto
             if (store.Count >= WANT) break;
             if (!HasImage(r)) continue;
             if (!DateWithin(r["dated"]?.ToString(), fromY, toY)) continue;
+
+            GetHamUrls(r, out string thumb, out string hiUrl);
+            if (string.IsNullOrEmpty(thumb)) continue; // 没图不要
             store.Add(r);
+
+            HUD($"[store] Added 1, now count={store.Count}", 1.5f);
         }
-        DebugHelper.Show($"ℹ {country}: after p1 → {store.Count}/{WANT}", 2f);
         if (store.Count >= WANT) yield break;
 
         // —— 3. 顺序拉其余页，直到凑够 or 超时
@@ -197,7 +304,7 @@ IEnumerator FetchOneCountry(string country, int fromY, int toY, List<JToken> sto
         {
             if (Time.realtimeSinceStartup * 1000f - t0 > MAX_MS)
             {
-                DebugHelper.Show($"⏱ {country}: timeout", 2f);
+                HUD($"⏰ Timeout page loop: {country}", 2f);
                 break;
             }
 
@@ -212,19 +319,29 @@ IEnumerator FetchOneCountry(string country, int fromY, int toY, List<JToken> sto
                 if (store.Count >= WANT) break;
                 if (!HasImage(r)) continue;
                 if (!DateWithin(r["dated"]?.ToString(), fromY, toY)) continue;
-                store.Add(r);
+                GetHamUrls(r, out string thumb, out string hiUrl);
+    if (string.IsNullOrEmpty(thumb)) continue; // 没图不要
+    store.Add(r);
+    HUD($"[store] Added 1, now count={store.Count}", 1.5f);
             }
-            DebugHelper.Show($"ℹ {country}: after p{page} → {store.Count}/{WANT}", 2f);
             if (store.Count >= WANT) break;
+
+            // 超时保护
+            if (Time.realtimeSinceStartup - start > timeout)
+            {
+                HUD($"⏰ Timeout country: {country}", 2f);
+                yield break;
+            }
         }
     }
     finally
     {
-        // ◆ 一定要 activeJobs-- ◆
+        // **保证一定会被执行**
         activeJobs--;
-        DebugHelper.Show($"◀ {country}: done", 2f);
+        HUD($"◀ Finish: {country}, activeJobs now: {activeJobs}", 2f);
     }
 }
+
 
 
 /* ---------- 抓单页：GetPage ---------- */
@@ -257,6 +374,8 @@ IEnumerator GetPage(string pid, int page, int f, int t,
 static bool HasImage(JToken r) =>
         r["secureimageurl"] != null
      || r["primaryimageurl"] != null
+     || r["thumb"] != null                // offline
+     || r["hi"] != null                   // offline
      || r["images"]?.Any(img => img["baseimageurl"] != null) == true
      || r["images"]?[0]?["baseimageurl"] != null;
 
@@ -383,4 +502,44 @@ IEnumerator WaitAndLoad()
     yield return StartCoroutine(LoadGallery());
 }
 
+/// Resolve thumbnail + hiRes from either online Harvard record or offline patched record.
+static void GetHamUrls(JToken rec, out string thumb, out string hiUrl)
+{
+    // 1) 优先离线字段
+    hiUrl = rec["_offline_hi"]?.ToString();
+    thumb = rec["thumb"]?.ToString();
+
+    // 2) 在线字段
+    if (string.IsNullOrEmpty(thumb))
+        thumb = rec["primaryimageurl"]?.ToString();
+    if (string.IsNullOrEmpty(thumb))
+        thumb = rec["images"]?[0]?["baseimageurl"]?.ToString();
+
+    if (string.IsNullOrEmpty(hiUrl))
+    {
+        string iiif = rec["images"]?[0]?["iiifbaseuri"]?.ToString()
+                   ?? rec["iiifbaseuri"]?.ToString();
+        if (!string.IsNullOrEmpty(iiif))
+            hiUrl = $"{iiif}/full/!1024,1024/0/default.jpg";
+    }
+
+    // 3) fallback
+    if (string.IsNullOrEmpty(hiUrl))
+        hiUrl = thumb;
+
+    // 4) 强制 https（分别处理，不要互相覆盖）
+    thumb = ForceHttps(thumb);
+    hiUrl = ForceHttps(hiUrl);
 }
+
+
+static string ForceHttps(string url)
+{
+    if (string.IsNullOrEmpty(url)) return url;
+    if (url.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
+        return "https://" + url.Substring(7);
+    return url;
+}
+
+}
+
