@@ -20,7 +20,7 @@ Through its innovative **"Weather Gallery" feature**, the project also demonstra
 
 👉 🎥 [Project Video](https://youtu.be/PBGzaap1sm8)
 
-👉 [Download APK (v1.0)](https://github.com/hml1688/Global-AR-Gallery/releases/tag/v1.0)
+👉 [Download APK (v1.0)](https://github.com/hml1688/Global-AR-Gallery/releases/tag/v2.0)
 
 > ⚠️ Requires an ARCore-supported Android device  
 > 📦 Format: `.apk` (manual install)
