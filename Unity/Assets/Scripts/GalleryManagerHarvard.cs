@@ -212,6 +212,49 @@ HUD($"🟩 Offline picks={picks.Count}", 3f);
     }
 
     DebugHelper.Show($"Offline fallback: added {Mathf.Min(need, picks.Count)} Asia recs ({fromY}–{toY})", 3f);
+
+    
+}
+
+// ====== Europe 2000–2025 离线补货 ======
+if (loaded < WANT && region == "Europe" && fromY >= 2000 && toY <= 2025)
+{
+    yield return OfflineHamEurope.EnsureLoaded();
+    int need = WANT - loaded;
+    var picks = OfflineHamEurope.Pick(fromY, toY, need);
+    HUD($"🟦 Europe offline picks={picks.Count}", 3f);
+
+    foreach (var recObj in picks)
+    {
+        var rec = OfflineHamEurope.ToJObj(recObj);
+        GetHamUrls(rec, out string thumb, out string hiUrl);
+        if (string.IsNullOrEmpty(thumb)) continue;
+
+        using UnityWebRequest texReq = UnityWebRequestTexture.GetTexture(thumb);
+        yield return texReq.SendWebRequest();
+        if (texReq.result != UnityWebRequest.Result.Success) 
+        {
+            DebugHelper.Show($"❌ Img fail: {texReq.error}\n{thumb}", 3f);
+            continue;
+        }
+
+        Texture tex = DownloadHandlerTexture.GetContent(texReq);
+        var f = frames[loaded];
+        f.paintingRenderer.sharedMaterial = new Material(pictureMat);
+        f.SetTexture(tex);
+        f.hiResUrl = hiUrl;
+        f.title    = rec["title"]?.ToString() ?? "(object)";
+        f.date     = rec["dated"]?.ToString() ?? "";
+        f.maker    = rec["maker"]?.ToString() ?? "";
+        f.place    = rec["place"]?.ToString() ?? "Europe";
+        f.hiTex    = tex;
+
+        loaded++;
+        if (statusText) statusText.text = $"HAM Loaded {loaded}/{WANT}";
+        if (loaded >= WANT) break;
+    }
+
+    DebugHelper.Show($"Europe offline fallback: added {Mathf.Min(need, picks.Count)} recs ({fromY}–{toY})", 3f);
 }
 
         if (statusText) {

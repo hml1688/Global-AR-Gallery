@@ -97,6 +97,7 @@ for (int i = 0; i < frames.Length && i < list.Count; i++)
 }
 
         if (statusText) statusText.text = "Done";
+        if (statusText) statusText.gameObject.SetActive(false);
     }
 
     public void ReloadFromPrefs()

@@ -99,6 +99,7 @@ if (list.Count > WANT) list = list.GetRange(0, WANT);
 
         }
         if (statusText) statusText.text = "Done";
+        if (statusText) statusText.gameObject.SetActive(false);
     }
 
     /* ------------ Reload 按钮 ------------ */

@@ -1,0 +1,86 @@
+[
+  {
+    "id": 146971,
+    "title": "Bottle Salt-glazed with ash spray & pellets",
+    "dated": "2000",
+    "minY": 2000,
+    "maxY": 2000,
+    "maker": "Phil Rogers",
+    "place": "Europe, United Kingdom, Wales",
+    "region": "Europe",
+    "thumb": "https://nrs.harvard.edu/urn-3:HUAM:74097_dynmc",
+    "hi": "https://ids.lib.harvard.edu/ids/iiif/17817627/full/!1024,1024/0/default.jpg"
+  },
+  {
+    "id": 319318,
+    "title": "In a Meadow",
+    "dated": "May 1990, printed September 2003",
+    "minY": 1990,
+    "maxY": 2003,
+    "maker": "Koichiro Kurita",
+    "place": "Europe, United Kingdom, Wales",
+    "region": "Europe",
+    "thumb": "https://nrs.harvard.edu/urn-3:HUAM:INV156536_dynmc",
+    "hi": "https://ids.lib.harvard.edu/ids/iiif/20412497/full/!1024,1024/0/default.jpg"
+  },
+  {
+    "id": 319315,
+    "title": "The First Snow",
+    "dated": "November 1995, printed January 2007",
+    "minY": 1995,
+    "maxY": 2007,
+    "maker": "Koichiro Kurita",
+    "place": "Europe, France, Languedoc",
+    "region": "Europe",
+    "thumb": "https://nrs.harvard.edu/urn-3:HUAM:INV156532_dynmc",
+    "hi": "https://ids.lib.harvard.edu/ids/iiif/20412493/full/!1024,1024/0/default.jpg"
+  },
+  {
+    "id": 319316,
+    "title": "Summer Grass",
+    "dated": "June 1996, printed June 2004",
+    "minY": 1996,
+    "maxY": 2004,
+    "maker": "Koichiro Kurita",
+    "place": "Europe, France, Languedoc",
+    "region": "Europe",
+    "thumb": "https://nrs.harvard.edu/urn-3:HUAM:INV156533_dynmc",
+    "hi": "https://ids.lib.harvard.edu/ids/iiif/20412494/full/!1024,1024/0/default.jpg"
+  },
+  {
+    "id": 319323,
+    "title": "Rock on Gennet",
+    "dated": "November 1995, printed Jan 2004",
+    "minY": 1995,
+    "maxY": 2004,
+    "maker": "Koichiro Kurita",
+    "place": "Europe, France, Languedoc",
+    "region": "Europe",
+    "thumb": "https://nrs.harvard.edu/urn-3:HUAM:INV156542_dynmc",
+    "hi": "https://ids.lib.harvard.edu/ids/iiif/20412503/full/!1024,1024/0/default.jpg"
+  },
+  {
+    "id": 357300,
+    "title": "50 U Heinrich-Heine-Str.",
+    "dated": "2009",
+    "minY": 2009,
+    "maxY": 2009,
+    "maker": "Corinne Wasmuht",
+    "place": "Europe, Germany, Berlin",
+    "region": "Europe",
+    "thumb": "https://nrs.harvard.edu/urn-3:HUAM:765052",
+    "hi": "https://ids.lib.harvard.edu/ids/iiif/438388369/full/!1024,1024/0/default.jpg"
+  },
+  {
+    "id": 353068,
+    "title": "Materials Lab",
+    "dated": "2015",
+    "minY": 2015,
+    "maxY": 2015,
+    "maker": "Fernanda Fragateiro",
+    "place": "Europe, Portugal, Lisbon",
+    "region": "Europe",
+    "thumb": "https://nrs.harvard.edu/urn-3:HUAM:763457",
+    "hi": "https://ids.lib.harvard.edu/ids/iiif/426972858/full/!1024,1024/0/default.jpg"
+  }
+]
