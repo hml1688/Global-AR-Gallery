@@ -156,12 +156,12 @@ This project uses open-access APIs to retrieve artwork and environmental data:
 
 This project makes use of 3D models from Sketchfab. We gratefully credit the original creators:
 
-- **"Art Gallery"** ([link](https://skfb.ly/oBJso)) by *denis_cliofas* is licensed under [Creative Commons Attribution](http://creativecommons.org/licenses/by/4.0/).
-- **"Sun"** ([link](https://skfb.ly/6yGSx)) by *SebastianSosnowski* is licensed under [Creative Commons Attribution](http://creativecommons.org/licenses/by/4.0/).
-- **"Cloud-sun-lowpoly"** ([link](https://skfb.ly/oGOYT)) by *Mitrix* is licensed under [Creative Commons Attribution](http://creativecommons.org/licenses/by/4.0/).
-- **"Snow FX Test"** ([link](https://skfb.ly/6x8TN)) by *andazty* is licensed under [Creative Commons Attribution](http://creativecommons.org/licenses/by/4.0/).
-- **"Rain 1"** ([link](https://skfb.ly/6TzDo)) by *Paxar095* is licensed under [Creative Commons Attribution](http://creativecommons.org/licenses/by/4.0/).
-- **"HYPERSPEED Starfield"** ([link](https://skfb.ly/oJ99r)) by *00004707* is licensed under [Creative Commons Attribution](http://creativecommons.org/licenses/by/4.0/).
+- [**Art Gallery**](https://skfb.ly/oBJso) by *denis_cliofas* — licensed under [CC Attribution](http://creativecommons.org/licenses/by/4.0/).
+- [**Sun**](https://skfb.ly/6yGSx) by *SebastianSosnowski* — licensed under [CC Attribution](http://creativecommons.org/licenses/by/4.0/).
+- [**Cloud-sun-lowpoly**](https://skfb.ly/oGOYT) by *Mitrix* — licensed under [CC Attribution](http://creativecommons.org/licenses/by/4.0/).
+- [**Snow FX Test**](https://skfb.ly/6x8TN) by *andazty* — licensed under [CC Attribution](http://creativecommons.org/licenses/by/4.0/).
+- [**Rain 1**](https://skfb.ly/6TzDo) by *Paxar095* — licensed under [CC Attribution](http://creativecommons.org/licenses/by/4.0/).
+- [**HYPERSPEED Starfield**](https://skfb.ly/oJ99r) by *00004707* — licensed under [CC Attribution](http://creativecommons.org/licenses/by/4.0/).
 
 
 ---
