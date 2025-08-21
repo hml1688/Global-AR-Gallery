@@ -6,8 +6,8 @@ Global AR Museum is an Android-based AR application that brings art galleries in
 
 
 <div align="center" style="display: flex; justify-content: center; align-items: center; gap: 20px; margin: 20px 0;">
-  <img src="https://github.com/hml1688/Global-AR-Gallery/blob/main/Images/exhibition1.jpg" style="width: 500px; height: 500px; object-fit: cover; border-radius: 8px; align-self: center;"/>
-  <img src="https://github.com/hml1688/Global-AR-Gallery/blob/main/Images/exhibition2.jpg" style="width: 500px; height: 600px; object-fit: cover; border-radius: 8px; align-self: center;"/>
+  <img src="https://github.com/hml1688/Global-AR-Gallery/blob/main/Images/exhibition1.jpg" style="width: 400px; height: 400px; object-fit: cover; border-radius: 8px; align-self: center;"/>
+  <img src="https://github.com/hml1688/Global-AR-Gallery/blob/main/Images/exhibition2.jpg" style="width: 400px; height: 500px; object-fit: cover; border-radius: 8px; align-self: center;"/>
 </div>
 
 
@@ -19,18 +19,6 @@ Global AR Museum explores new ways of engaging with **open-access cultural data*
 
 Through its innovative **"Weather Gallery" feature**, the project also demonstrates how environmental data, such as real-time weather, can dynamically shape exhibition themes. This opens exciting possibilities for future applications, where any type of real-world data can instantly generate thematic micro-exhibitions—extending to areas like education, tourism, and public art installations.
 
----
-
-## 📲 Get the App
-
-👉 🔗 [Project Website](https://hml1688.github.io/Global-AR-Gallery/webpage.html)
-
-👉 🎥 [Project Video](https://youtu.be/PBGzaap1sm8)
-
-👉 [Download APK (v3.0)](https://github.com/hml1688/Global-AR-Gallery/releases/tag/v3.0)
-
-> ⚠️ Requires an ARCore-supported Android device  
-> 📦 Format: `.apk` (manual install)
 
 ---
 
@@ -149,6 +137,20 @@ This project uses open-access APIs to retrieve artwork and environmental data:
 - 🎨 [Harvard Art Museums API](https://github.com/harvardartmuseums/api-docs)
 - 🏛️ [V&A Museum API](https://developers.vam.ac.uk/guide/v2/welcome.html)
 - ☁️ [OpenWeather API](https://openweathermap.org/api)
+
+---
+
+
+## 📲 Get the App
+
+👉 🔗 [Project Website](https://hml1688.github.io/Global-AR-Gallery/webpage.html)
+
+👉 🎥 [Project Video](https://youtu.be/PBGzaap1sm8)
+
+👉 [Download APK (v3.0)](https://github.com/hml1688/Global-AR-Gallery/releases/tag/v3.0)
+
+> ⚠️ Requires an ARCore-supported Android device  
+> 📦 Format: `.apk` (manual install)
 
 ---
 
