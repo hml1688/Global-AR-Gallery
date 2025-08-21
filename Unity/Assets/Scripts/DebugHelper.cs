@@ -14,7 +14,7 @@ public class DebugHelper : MonoBehaviour
     void Update()
     {
         if (debugText && Time.time > showUntil)
-            debugText.text = "";   // 超时清除
+            debugText.text = "";   // Timeout clearance
     }
 
     public static void Show(string msg, float duration = 3f)

@@ -8,8 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 /// <summary>
-/// Loads & caches the offline Harvard Asia 2000–2025 dataset
-/// you placed in StreamingAssets/offline-ham-asia-2000-2025-STRICT-CE.json.
+/// Loads & caches the offline Harvard Asia 2000–2025 dataset placed in StreamingAssets/offline-ham-asia-2000-2025-STRICT-CE.json.
 /// Provides filtered lists for fallback usage.
 /// </summary>
 public static class OfflineHamAsia
@@ -41,14 +40,14 @@ public static class OfflineHamAsia
 
     if (_loading)
     {
-        // 等到其它协程加载完
+        // Wait for all the other coroutines have been loaded
         while (_loading) yield return null;
         yield break;
     }
 
     _loading = true;
     string path = Path.Combine(Application.streamingAssetsPath, FILENAME);
-    Debug.Log("🟨 JSON Load Path: " + path);
+    Debug.Log("JSON Load Path: " + path);
 
     string json = null;
     if (path.Contains("://") || path.Contains("jar:"))
@@ -68,7 +67,7 @@ public static class OfflineHamAsia
     {
         try {
             _all = JsonConvert.DeserializeObject<List<Rec>>(json);
-            Debug.Log($"✅ Loaded {_all.Count} offline records.");
+            Debug.Log($"Loaded {_all.Count} offline records.");
         } catch (Exception e) {
             Debug.LogError("OfflineHamAsia parse error: " + e);
             _all = new List<Rec>();
@@ -85,7 +84,7 @@ public static class OfflineHamAsia
 
     /// <summary>
     /// Get up to `maxCount` records whose year range overlaps user [fromY..toY].
-    /// regionIgnored — because this file is Asia-only; include param in case future expansion.
+    /// regionIgnored — because this file is Asia-only.
     /// </summary>
     public static List<Rec> Pick(int fromY, int toY, int maxCount)
     {

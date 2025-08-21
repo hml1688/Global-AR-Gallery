@@ -8,8 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 /// <summary>
-/// Loads & caches the offline Harvard Europe 2000–2025 dataset
-/// you placed in StreamingAssets/offline-ham-Europe-2000-2025-STRICT-CE.json.
+/// Loads & caches the offline Harvard Europe 2000–2025 dataset placed in StreamingAssets/offline-ham-Europe-2000-2025-STRICT-CE.json.
 /// Provides filtered lists for fallback usage.
 /// </summary>
 public static class OfflineHamEurope
@@ -19,11 +18,11 @@ public static class OfflineHamEurope
     [Serializable]
     public class Rec
     {
-        public int    id;
+        public int id;
         public string title;
         public string dated;
-        public int    minY;
-        public int    maxY;
+        public int minY;
+        public int maxY;
         public string maker;
         public string place;
         public string region;
@@ -36,56 +35,59 @@ public static class OfflineHamEurope
 
     /// Ensure data loaded (call as coroutine in MonoBehaviour).
     public static IEnumerator EnsureLoaded()
-{
-    if (_all != null) yield break;
-
-    if (_loading)
     {
-        // 等到其它协程加载完
-        while (_loading) yield return null;
-        yield break;
-    }
+        if (_all != null) yield break;
 
-    _loading = true;
-    string path = Path.Combine(Application.streamingAssetsPath, FILENAME);
-    Debug.Log("🟨 JSON Load Path: " + path);
+        if (_loading)
+        {
+            // Wait for all the other coroutines have been loaded
+            while (_loading) yield return null;
+            yield break;
+        }
 
-    string json = null;
-    if (path.Contains("://") || path.Contains("jar:"))
-    {
-        using UnityWebRequest req = UnityWebRequest.Get(path);
-        yield return req.SendWebRequest();
-        if (req.result == UnityWebRequest.Result.Success) json = req.downloadHandler.text;
-        else Debug.LogError("OfflineHamEurope load error: " + req.error);
-    }
-    else
-    {
-        try { json = System.IO.File.ReadAllText(path); }
-        catch (Exception e) { Debug.LogError("OfflineHamEurope read error: " + e); }
-    }
+        _loading = true;
+        string path = Path.Combine(Application.streamingAssetsPath, FILENAME);
+        Debug.Log("JSON Load Path: " + path);
 
-    if (!string.IsNullOrEmpty(json))
-    {
-        try {
-            _all = JsonConvert.DeserializeObject<List<Rec>>(json);
-            Debug.Log($"✅ Loaded {_all.Count} offline records.");
-        } catch (Exception e) {
-            Debug.LogError("OfflineHamEurope parse error: " + e);
+        string json = null;
+        if (path.Contains("://") || path.Contains("jar:"))
+        {
+            using UnityWebRequest req = UnityWebRequest.Get(path);
+            yield return req.SendWebRequest();
+            if (req.result == UnityWebRequest.Result.Success) json = req.downloadHandler.text;
+            else Debug.LogError("OfflineHamEurope load error: " + req.error);
+        }
+        else
+        {
+            try { json = System.IO.File.ReadAllText(path); }
+            catch (Exception e) { Debug.LogError("OfflineHamEurope read error: " + e); }
+        }
+
+        if (!string.IsNullOrEmpty(json))
+        {
+            try
+            {
+                _all = JsonConvert.DeserializeObject<List<Rec>>(json);
+                Debug.Log($"Loaded {_all.Count} offline records.");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("OfflineHamEurope parse error: " + e);
+                _all = new List<Rec>();
+            }
+        }
+        else
+        {
             _all = new List<Rec>();
         }
-    }
-    else
-    {
-        _all = new List<Rec>();
-    }
 
-    _loading = false;
-}
+        _loading = false;
+    }
 
 
     /// <summary>
     /// Get up to `maxCount` records whose year range overlaps user [fromY..toY].
-    /// regionIgnored — because this file is Europe-only; include param in case future expansion.
+    /// regionIgnored — because this file is Europe-only.
     /// </summary>
     public static List<Rec> Pick(int fromY, int toY, int maxCount)
     {
@@ -111,7 +113,8 @@ public static class OfflineHamEurope
 
         // create minimal "images"
         var imagesArr = new JArray();
-        imagesArr.Add(new JObject {
+        imagesArr.Add(new JObject
+        {
             ["baseimageurl"] = r.thumb,
             // Can't guarantee IIIF base is derivable; store hi in custom key:
             ["hi"] = r.hi
@@ -119,10 +122,10 @@ public static class OfflineHamEurope
 
         var jo = new JObject
         {
-            ["id"]    = r.id,
+            ["id"] = r.id,
             ["title"] = r.title,
             ["dated"] = r.dated,
-            ["people"]= peopleArr,
+            ["people"] = peopleArr,
             ["place"] = r.place,
             ["primaryimageurl"] = r.thumb,
             // Custom hi field (read in binding helper)

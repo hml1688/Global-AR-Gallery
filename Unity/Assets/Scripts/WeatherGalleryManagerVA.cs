@@ -9,86 +9,89 @@ public class WeatherGalleryManagerVA : MonoBehaviour
 {
     [Header("Dependencies")]
     public Material pictureMat;
-    public TextMeshProUGUI statusText;   // 可选
+    public TextMeshProUGUI statusText;   // Optional loading status text
 
     const int WANT = 10;
     const int PAGE_SIZE = 100;
 
-    /* -------- 主入口协程 -------- */
+    /* -------- Main entry coroutine -------- */
     public IEnumerator LoadWeatherGallery(string keyword)
     {
         if (statusText) statusText.text = "V&A Loading…";
 
-        /* 1️⃣ 先 page=1 确定总页数 */
+        // Construct base API URL with keyword and pagination settings
         string baseURL = $"https://api.vam.ac.uk/v2/objects/search" +
                          $"?q={UnityWebRequest.EscapeURL(keyword)}" +
                          $"&image_exists=true&page_size={PAGE_SIZE}&responseGroup=full";
 
+        // Load first page of results
         RootVA page1 = null;
-yield return StartCoroutine(YieldJson<RootVA>(baseURL + "&page=1", r => page1 = r));
-if (page1 == null) yield break;
+        yield return StartCoroutine(YieldJson<RootVA>(baseURL + "&page=1", r => page1 = r));
+        if (page1 == null) yield break;
 
-int total = page1.info.record_count;
-int pages = Mathf.Max(1, Mathf.CeilToInt(total / (float)PAGE_SIZE));
+        int total = page1.info.record_count;
+        int pages = Mathf.Max(1, Mathf.CeilToInt(total / (float)PAGE_SIZE));
 
-int rndPage = Random.Range(1, pages + 1);
-RootVA data = page1;  // 默认 = page1
-if (rndPage != 1)
-{
-    yield return StartCoroutine(YieldJson<RootVA>(baseURL + $"&page={rndPage}", r => data = r));
-    if (data == null) yield break;
-}
-
-
-        /* 2️⃣ 过滤有图 → shuffle → 10 条 */
-        var list = data.records.Where(r => !string.IsNullOrEmpty(r._primaryImageId)).ToList();
-        Shuffle(list); 
-        /* ───── 补货逻辑开始 ───── */
-if (list.Count < WANT)              // < 10 张
-{
-    // 当前天气主类（WeatherService.FetchKeyword 已写入）
-    string main       = PlayerPrefs.GetString("WeatherMain", "Clear");
-    string fallbackKw = WeatherService.GetDefaultKeyword(main);
-
-    // 避免随机词本就是默认词时重复调 API
-    //若随机词本身就等于默认词，fallbackKw != keyword 会阻止重复请求。若补货后仍不足 10 张，就按实际数量展示，也不会崩溃。
-    if (fallbackKw != keyword)
-    {
-        string fbURL = $"https://api.vam.ac.uk/v2/objects/search" +
-                       $"?q={UnityWebRequest.EscapeURL(fallbackKw)}" +
-                       $"&image_exists=true&page_size={PAGE_SIZE}&responseGroup=full";
-
-        RootVA fb = null;
-        yield return StartCoroutine(YieldJson<RootVA>(fbURL + "&page=1", r => fb = r));
-
-        if (fb != null)
+        // Randomly pick one page (might be page1 again)
+        int rndPage = Random.Range(1, pages + 1);
+        RootVA data = page1;
+        if (rndPage != 1)
         {
-            var extra = fb.records
-                          .Where(r => !string.IsNullOrEmpty(r._primaryImageId))
-                          .ToList();
-            Shuffle(extra);          // 保证补货也随机
-            list.AddRange(extra);
+            yield return StartCoroutine(YieldJson<RootVA>(baseURL + $"&page={rndPage}", r => data = r));
+            if (data == null) yield break;
         }
-    }
-}
-/* ───── 补货逻辑结束 ───── */
 
-/* 3️⃣ 最终只取 WANT 条 */
-if (list.Count > WANT) list = list.GetRange(0, WANT);
 
-        /* 3️⃣ 直接按 Tag 找 10 个 ArtFrame */
+        // Filter valid image entries and shuffle
+        var list = data.records.Where(r => !string.IsNullOrEmpty(r._primaryImageId)).ToList();
+        Shuffle(list);
+        // Fallback refill logic if not enough result
+        if (list.Count < WANT)              // < 10 
+        {
+            // Current Weather-Main Category
+            string main = PlayerPrefs.GetString("WeatherMain", "Clear");
+            string fallbackKw = WeatherService.GetDefaultKeyword(main);
+
+            // Avoid duplicate keyword
+            // If the random word is exactly the same as the default word, the condition "fallbackKw != keyword" will prevent duplicate requests. 
+            // If there are still less than 10 items after restocking, the actual quantity will be displayed without causing a crash.
+            if (fallbackKw != keyword)
+            {
+                string fbURL = $"https://api.vam.ac.uk/v2/objects/search" +
+                               $"?q={UnityWebRequest.EscapeURL(fallbackKw)}" +
+                               $"&image_exists=true&page_size={PAGE_SIZE}&responseGroup=full";
+
+                RootVA fb = null;
+                yield return StartCoroutine(YieldJson<RootVA>(fbURL + "&page=1", r => fb = r));
+
+                if (fb != null)
+                {
+                    var extra = fb.records
+                                  .Where(r => !string.IsNullOrEmpty(r._primaryImageId))
+                                  .ToList();
+                    Shuffle(extra);          // Guarantee that restocking is also random
+                    list.AddRange(extra);
+                }
+            }
+        }
+        // End fallback logic
+
+        if (list.Count > WANT) list = list.GetRange(0, WANT);
+
+        // Find all available ArtFrame objects in scene
         ArtFrame[] frames = GameObject.FindGameObjectsWithTag("ArtFrame")
                              .OrderBy(g => g.name)
                              .Select(g => g.GetComponent<ArtFrame>())
                              .Take(WANT)
                              .ToArray();
 
-        /* 4️⃣ 下载并贴图 */
+        // Download and assign textures to each frame
         for (int i = 0; i < frames.Length && i < list.Count; i++)
         {
             string imgUrl = $"https://framemark.vam.ac.uk/collections/{list[i]._primaryImageId}/full/400,/0/default.jpg";
             yield return StartCoroutine(SetTexture(frames[i], imgUrl));
 
+            // Set title by checking several fields in order
             frames[i].title = FirstNonEmpty("(object)",
             list[i]._primaryTitle,
             list[i].title,
@@ -102,7 +105,7 @@ if (list.Count > WANT) list = list.GetRange(0, WANT);
         if (statusText) statusText.gameObject.SetActive(false);
     }
 
-    /* ------------ Reload 按钮 ------------ */
+    // Manual Reload via UI
     public void ReloadFromPrefs()
     {
         StopAllCoroutines();
@@ -111,18 +114,18 @@ if (list.Count > WANT) list = list.GetRange(0, WANT);
         FindObjectOfType<WeatherKeywordBanner>()?.UpdateKeyword(kw);
     }
 
-    /* ------------ 工具 ------------ */
+    // Helper methods
     IEnumerator YieldJson<T>(string url, System.Action<T> cb)
-{
-    using UnityWebRequest req = UnityWebRequest.Get(url);
-    yield return req.SendWebRequest();
-    if (req.result != UnityWebRequest.Result.Success)
     {
-        Debug.Log(req.error);
-        yield break;
+        using UnityWebRequest req = UnityWebRequest.Get(url);
+        yield return req.SendWebRequest();
+        if (req.result != UnityWebRequest.Result.Success)
+        {
+            Debug.Log(req.error);
+            yield break;
+        }
+        cb(JsonUtility.FromJson<T>(req.downloadHandler.text));
     }
-    cb(JsonUtility.FromJson<T>(req.downloadHandler.text));
-}
 
 
 
@@ -135,26 +138,29 @@ if (list.Count > WANT) list = list.GetRange(0, WANT);
         Texture tex = DownloadHandlerTexture.GetContent(r);
         frame.paintingRenderer.sharedMaterial = new Material(pictureMat);
         frame.SetTexture(tex);
-        // ✅ 同时刷新缓存
+
+        // Save hi-res info to frame for later use
         frame.hiResUrl = url;
-        frame.hiTex    = tex; 
+        frame.hiTex = tex;
     }
 
-    void Shuffle<T>(IList<T> a){for(int i=a.Count-1;i>0;i--){int j=Random.Range(0,i+1); (a[i],a[j])=(a[j],a[i]);}}
+    void Shuffle<T>(IList<T> a) { for (int i = a.Count - 1; i > 0; i--) { int j = Random.Range(0, i + 1); (a[i], a[j]) = (a[j], a[i]); } }
 
     /* ---------- JSON ---------- */
-    [System.Serializable] public class Info        { public int record_count; }
-    [System.Serializable] public class RecordVA    {
-        public string _primaryImageId,_primaryTitle,title,_primaryObjectName,objectType;
+    [System.Serializable] public class Info { public int record_count; }
+    [System.Serializable]
+    public class RecordVA
+    {
+        public string _primaryImageId, _primaryTitle, title, _primaryObjectName, objectType;
     }
-    [System.Serializable] public class RootVA      { public Info info; public RecordVA[] records; }
+    [System.Serializable] public class RootVA { public Info info; public RecordVA[] records; }
 
     static string FirstNonEmpty(string fallback, params string[] ss)
-{
-    foreach (var s in ss)
-        if (!string.IsNullOrWhiteSpace(s)) return s.Trim();
-    return fallback;
-}
+    {
+        foreach (var s in ss)
+            if (!string.IsNullOrWhiteSpace(s)) return s.Trim();
+        return fallback;
+    }
 
 
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class WeatherEffectController : MonoBehaviour
 {
-    List<GameObject> effects = new();     // inspector 不再手填
+    List<GameObject> effects = new(); 
 
     Dictionary<string, string> map = new()
     {
@@ -14,10 +14,10 @@ public class WeatherEffectController : MonoBehaviour
         {"Fog","FX_Sand"},
         {"Dust","FX_Sand"},
         {"Squall","FX_Sand"},
-        {"Thunderstorm","FX_Sand"}
+        {"Thunderstorm","FX_Rain"}
     };
 
-    void Awake()      // ← 新增
+    void Awake()     
     {
         effects.Clear();
         foreach (Transform child in transform) effects.Add(child.gameObject);

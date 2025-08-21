@@ -7,13 +7,13 @@ public class WeatherKeywordBanner : MonoBehaviour
 
     void Start()
     {
-        // ① 最保险：从 PlayerPrefs 读取
+        // The safest option: Reading from PlayerPrefs
         string kw = PlayerPrefs.GetString("WeatherKeyword", "sun");
 
         keywordText.text = $"Keyword: <b>{kw}</b>";
     }
 
-    /// <summary>允许 GalleryManager 在刷新时调用，实时更新</summary>
+    // Allow GalleryManager to be called during the refresh process to perform real-time updates
     public void UpdateKeyword(string newKw)
     {
         keywordText.text = $"Keyword: <b>{newKw}</b>";

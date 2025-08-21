@@ -6,28 +6,31 @@ using System.Collections;
 
 public class InfoPanel : MonoBehaviour
 {
-    public GameObject      canvasRoot;
-    public RawImage        img;
-    public AspectRatioFitter fitter;     // ✦ 新增：拖 ImgHolder 的组件
+    public GameObject canvasRoot;    // Root of the panel canvas
+    public RawImage img;     // UI element for displaying image
+    public AspectRatioFitter fitter;     // Maintains image aspect ratio
     public TextMeshProUGUI titleValue, dateValue, makerValue, placeValue, museumValue, loadingHint;
 
     static InfoPanel inst;
-    void Awake() => inst = this;
+    void Awake() => inst = this;      // Singleton instance
 
+    // Entry point to show the info panel with metadata and image from ArtFrame
     public static void Show(ArtFrame f) => inst?.StartCoroutine(inst.ShowRoutine(f));
 
     IEnumerator ShowRoutine(ArtFrame f)
     {
+        // Show panel UI
         canvasRoot.SetActive(true);
         loadingHint.gameObject.SetActive(true);
         img.texture = null;
 
+        // Populate metadata fields
         titleValue.text = f.title;
-        dateValue.text  = f.date;
+        dateValue.text = f.date;
         makerValue.text = string.IsNullOrWhiteSpace(f.maker) ? "Unknown" : f.maker;
         placeValue.text = f.place;
 
-         /* ★★ 判断 Tag 来显示来源馆 ★★ */
+        // Determine artwork source by tag
         if (museumValue)
         {
             string museum = f.gameObject.CompareTag("ArtFrameHarvard")
@@ -36,7 +39,7 @@ public class InfoPanel : MonoBehaviour
             museumValue.text = museum;
         }
 
-        // ☆ 1. 下载（或用缓存）
+        // 1. Load high-resolution image if not cached
         if (f.hiTex == null)
         {
             UnityWebRequest req = UnityWebRequestTexture.GetTexture(f.hiResUrl);
@@ -45,23 +48,24 @@ public class InfoPanel : MonoBehaviour
                 f.hiTex = DownloadHandlerTexture.GetContent(req);
         }
 
-        // ☆ 2. 应用
+        // 2. Apply loaded texture and maintain correct aspect ratio
         if (f.hiTex)
         {
             img.texture = f.hiTex;
 
-            // **关键** 3 行：把真实宽高比写进 ARF
+            // Maintain correct height/width ratio
             float ratio = (float)f.hiTex.width / f.hiTex.height;
-            fitter.aspectRatio = ratio;                 // 让 Height 自动 = Width / ratio
+            fitter.aspectRatio = ratio;                 // Make "Height" equal to "Width" divided by "ratio".
         }
 
         loadingHint.gameObject.SetActive(false);
     }
 
+    // Hide the panel when user closes it
     public void Hide()
-{
-    DebugHelper.Show("Close Triggered");
-    canvasRoot.SetActive(false);
-}
+    {
+        DebugHelper.Show("Close Triggered");
+        canvasRoot.SetActive(false);
+    }
 
 }

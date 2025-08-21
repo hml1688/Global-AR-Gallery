@@ -4965,7 +4965,7 @@ MonoBehaviour:
   galleryPrefab: {fileID: 6920230700908326755, guid: c05e6c5afe44abe4eab2108dbdfd31bd,
     type: 3}
   xrOrigin: {fileID: 1279101835}
-  holdSeconds: 0.4
+  holdSeconds: 0.2
   vaManager: {fileID: 1059906191}
   harvardManager: {fileID: 961263870}
 --- !u!114 &1279101838

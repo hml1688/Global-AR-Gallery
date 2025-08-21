@@ -1,101 +1,102 @@
 using UnityEngine;
-using TMPro;   
+using TMPro;
 using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(Renderer))]
 public class ArtFrame : MonoBehaviour, IPointerClickHandler
 {
-    public Renderer paintingRenderer;           // 留空则取自身
+    public Renderer paintingRenderer;
     [HideInInspector] public string title, date, maker, place;
     [HideInInspector] public string hiResUrl;
     [HideInInspector] public Texture hiTex;
 
     void Awake()
-{
-    if (!paintingRenderer)
-        paintingRenderer = GetComponent<Renderer>();
+    {
+        // Automatically assign Renderer if not set manually
+        if (!paintingRenderer)
+            paintingRenderer = GetComponent<Renderer>();
+    }
 
-    // ✅ 正确写法是等贴图加载之后再设置 wrapMode（在 SetTexture 里设置）
-}
 
-
-    /// <summary>贴图：保持比例，不拉伸；用材质 Tiling / Offset 实现信箱（黑边）效果</summary>
+    // Apply a texture to the frame while maintaining its aspect ratio. Prevents stretching or distortion.
     public void SetTexture(Texture tex)
-{
-    var mat = paintingRenderer.material;        // 实例材质
-    mat.mainTexture = tex;
-
-    // ✅ 若为空贴图（比如 ClearTexture 或下载失败）→ 重置 wrapMode、缩放、偏移
-    if (tex == null)
     {
-        mat.mainTextureScale  = Vector2.one;
-        mat.mainTextureOffset = Vector2.zero;
-        return;
+        var mat = paintingRenderer.material;
+        mat.mainTexture = tex;
+
+        // If no texture provided (e.g., after ClearTexture or load failure), reset material tiling and offset
+        if (tex == null)
+        {
+            mat.mainTextureScale = Vector2.one;
+            mat.mainTextureOffset = Vector2.zero;
+            return;
+        }
+
+        // Set wrap mode to Clamp to prevent tiling artifacts
+        tex.wrapMode = TextureWrapMode.Clamp;
+
+        // Aspect Ratio Calculation
+        float texRatio = (float)tex.width / tex.height;
+        float frameRatio = paintingRenderer.bounds.size.x /
+                           paintingRenderer.bounds.size.y;
+
+        Vector2 tiling = Vector2.one;
+        Vector2 offset = Vector2.zero;
+
+        // If the texture is wider than the frame
+        if (texRatio > frameRatio)
+        {
+            float scaleY = frameRatio / texRatio;
+            tiling.y = scaleY;
+            offset.y = (1f - scaleY) / 2f;
+        }
+        else
+        {
+            // If the texture is taller than the frame
+            float scaleX = texRatio / frameRatio;
+            tiling.x = scaleX;
+            offset.x = (1f - scaleX) / 2f;
+        }
+
+        mat.mainTextureScale = tiling;
+        mat.mainTextureOffset = offset;
     }
 
-    // ✅ 修正：设置的是贴图的 wrapMode
-    tex.wrapMode = TextureWrapMode.Clamp;
-
-    // ---- 计算宽高比 ----
-    float texRatio   = (float)tex.width  / tex.height;
-    float frameRatio = paintingRenderer.bounds.size.x /
-                       paintingRenderer.bounds.size.y;
-
-    Vector2 tiling  = Vector2.one;
-    Vector2 offset  = Vector2.zero;
-
-    if (texRatio > frameRatio)
-    {
-        float scaleY = frameRatio / texRatio;
-        tiling.y = scaleY;
-        offset.y = (1f - scaleY) / 2f;
-    }
-    else
-    {
-        float scaleX = texRatio / frameRatio;
-        tiling.x = scaleX;
-        offset.x = (1f - scaleX) / 2f;
-    }
-
-    mat.mainTextureScale  = tiling;
-    mat.mainTextureOffset = offset;
-}
-
-    /* ---------- 点击事件：把自己送去 InfoPanel ---------- */
+    //Handle click events on the artwork. Sends data to InfoPanel for display (Weather or Explore panel).
     public void OnPointerClick(PointerEventData eventData)
     {
-        DebugHelper.Show($"Clicked {title}");     // ✅ 屏幕显示文字
-        // ① 优先找 Weather 版面板
-    if (InfoPanelWeatherExists())
-    {
-        InfoPanelWeather.Show(this);      // WeatherGalleryScene 使用
-    }
-    else
-    {
-        InfoPanel.Show(this);             // Explore 方向使用
-    }
+        DebugHelper.Show($"Clicked {title}");     // Show debug message on screen
+
+        //First try to show the weather version of InfoPanel (if present)
+        if (InfoPanelWeatherExists())
+        {
+            InfoPanelWeather.Show(this);      // Used in WeatherGalleryScene
+        }
+        else
+        {
+            InfoPanel.Show(this);             // Used in Global Gallery
+        }
     }
 
-    //添加内存释放函数,防止在多次“换一批”（Refresh）之后占用过多内存
-public void ClearTexture()
-{
-    if (hiTex != null)
+    // Clear texture and release memory to avoid accumulation after repeated refreshes.
+    public void ClearTexture()
     {
-        Destroy(hiTex);       // 释放贴图内存
-        hiTex = null;
+        if (hiTex != null)
+        {
+            Destroy(hiTex);       // Release texture memory
+            hiTex = null;
+        }
+
+        SetTexture(null);         // Remove texture from display
+        title = date = maker = place = "";
+        hiResUrl = "";
     }
 
-    SetTexture(null);         // 清除显示贴图
-    title = date = maker = place = "";
-    hiResUrl = "";
-}
-
-/* ---------- 判断场景里是否有 Weather 版面板 ---------- */
-bool InfoPanelWeatherExists()
-{
-    // 场景中是否存在激活的 InfoPanelWeather 单例
-    return FindObjectOfType<InfoPanelWeather>(includeInactive: false) != null;
-}
+    // Check whether the Weather InfoPanel is present and active in the scene
+    bool InfoPanelWeatherExists()
+    {
+        return FindObjectOfType<InfoPanelWeather>(includeInactive: false) != null;
+    }
 
 
 }

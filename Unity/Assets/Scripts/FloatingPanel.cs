@@ -1,74 +1,77 @@
 using UnityEngine;
 using TMPro;
-using UnityEngine.UI;   // 若想给按钮加透明度动画，可用
+using UnityEngine.UI;
 
 public class FloatingPanel : MonoBehaviour
 {
     [Header("UI element")]
-    public GameObject configPanel;               // 拖 ConfigPanel
-    public TMP_Dropdown regionDropdown;          // 拖 dropdown
-    public TMP_InputField yearFromInput;         // 拖 input
-    public TMP_InputField yearToInput;           // 拖 input
-    public Button toggleButton;                  // ☰ 按钮（可选）
-    // ——改成同时引用两种 Manager——
-    public GalleryManagerVA       vaManager;
-    public GalleryManagerHarvard  harvardManager;
+    public GameObject configPanel;               // Reference to the configuration panel
+    public TMP_Dropdown regionDropdown;          // Region dropdown menu
+    public TMP_InputField yearFromInput;         // Input field for start year
+    public TMP_InputField yearToInput;           // Input field for end year
+    public Button toggleButton;                  // ☰ button for toggling panel
 
-    /* ---------- 1. 场景开始时，把输入框填成当前筛选 ---------- */
+    // Managers for both museum data source
+    public GalleryManagerVA vaManager;
+    public GalleryManagerHarvard harvardManager;
+
+    // 1. Initialize the panel with current filter values on scene start.
     void Start()
     {
-        // 若 PlayerPrefs 尚未写入，用 Menu 的默认值
+        // Load saved filter values (or fallback to defaults)
         string region = PlayerPrefs.GetString("region", "Europe");
         int from = PlayerPrefs.GetInt("yearFrom", 1500);
-        int to   = PlayerPrefs.GetInt("yearTo",   1900);
+        int to = PlayerPrefs.GetInt("yearTo", 1900);
 
-        // Dropdown 选项同步
+        // Set dropdown to match saved region
         int idx = regionDropdown.options.FindIndex(o => o.text == region);
         if (idx >= 0) regionDropdown.value = idx;
 
+        // Set year input fields
         yearFromInput.text = from.ToString();
-        yearToInput.text   = to.ToString();
+        yearToInput.text = to.ToString();
 
-        // 关闭配置窗
+        // Hide the configuration panel by default
         configPanel.SetActive(false);
     }
 
-    /* ---------- 2. ☰ / ✕ 共用：开关面板 ---------- */
+    // Toggle the visibility of the configuration panel (☰ / ✕ button)
     public void TogglePanel()
     {
         configPanel.SetActive(!configPanel.activeSelf);
     }
 
-    /* ---------- 3. 点击 Apply：保存新筛选并刷新画作 ---------- */
+    // Apply button: save new filter values and reload galleries.
     public void OnApply()
     {
-        // 年份校验
+        // Validate year input fields
         if (!int.TryParse(yearFromInput.text, out int from) ||
-            !int.TryParse(yearToInput.text,   out int to))
+            !int.TryParse(yearToInput.text, out int to))
             return;
 
-        // 写入 PlayerPrefs
+        // Save filter values to PlayerPrefs
         string region = regionDropdown.options[regionDropdown.value].text;
         PlayerPrefs.SetString("region", region);
-        PlayerPrefs.SetInt   ("yearFrom", Mathf.Min(from, to));
-        PlayerPrefs.SetInt   ("yearTo",   Mathf.Max(from, to));
+        PlayerPrefs.SetInt("yearFrom", Mathf.Min(from, to));
+        PlayerPrefs.SetInt("yearTo", Mathf.Max(from, to));
 
-        // 关闭面板 + 重新抓取贴图
+        // Close panel and reload data from both sources
         configPanel.SetActive(false);
-        // ——同时刷新两家博物馆——
-        if (vaManager)       vaManager.ReloadGallery();
-        if (harvardManager)  harvardManager.ReloadGallery();
+
+        // Simultaneously refresh two museums
+        if (vaManager) vaManager.ReloadGallery();
+        if (harvardManager) harvardManager.ReloadGallery();
     }
 
-    /* ---------- 4. 单独的 Refresh 按钮 ---------- */
+    // Refresh button: fetch a new batch of exhibits using current filters.
     public void OnRefresh()
     {
-        // 不改筛选，只换 20 张
-        if (vaManager)       vaManager.ReloadGallery();
-        if (harvardManager)  harvardManager.ReloadGallery();
+        // Keep current filters, but reload artwork selection
+        if (vaManager) vaManager.ReloadGallery();
+        if (harvardManager) harvardManager.ReloadGallery();
     }
 
-    // 5.单独的关闭函数（不刷新）
+    // Close the configuration panel without applying changes.
     public void OnClose()
     {
         configPanel.SetActive(false);

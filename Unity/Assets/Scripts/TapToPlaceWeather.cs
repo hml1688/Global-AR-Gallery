@@ -7,24 +7,24 @@ using System.Collections.Generic;
 [RequireComponent(typeof(ARRaycastManager))]
 public class TapToPlaceWeather : MonoBehaviour
 {
-    public GameObject galleryPrefab;          // 拖 ArtGallery
+    public GameObject galleryPrefab;          // ArtGallery
     public Transform xrOrigin;                // XR Origin
-    public float holdSeconds = 0.4f;
+    public float holdSeconds = 0.2f;
 
-    public WeatherGalleryManagerVA      vaManager;
+    public WeatherGalleryManagerVA vaManager;
     public WeatherGalleryManagerHarvard harvardManager;
 
     ARRaycastManager raycaster;
     GameObject galleryInstance;
     Transform entranceAnchor;
     float pressTime;
-    static readonly List<ARRaycastHit> hits = new ();
+    static readonly List<ARRaycastHit> hits = new();
 
     void Awake() => raycaster = GetComponent<ARRaycastManager>();
 
     void Update()
     {
-        if (galleryInstance) return;  // 已放置，退出检测
+        if (galleryInstance) return;  // Already placed, exit detection
 
         if (Touchscreen.current.primaryTouch.press.isPressed)
         {
@@ -41,14 +41,14 @@ public class TapToPlaceWeather : MonoBehaviour
 
     void PlaceGallery(Pose hitPose)
     {
-        // ① 实例化 prefab
+        // Instantiate prefab
         galleryInstance = Instantiate(galleryPrefab, hitPose.position, Quaternion.identity);
 
-        // ② 找 EntranceAnchor（子物体）
+        // Find EntranceAnchor (sub-object)
         entranceAnchor = galleryInstance.transform.Find("EntranceAnchor");
         if (!entranceAnchor)
         {
-            Debug.LogError("❌ EntranceAnchor 未找到！");
+            Debug.LogError("Cannot find the EntranceAnchor!");
             return;
         }
 
@@ -57,32 +57,32 @@ public class TapToPlaceWeather : MonoBehaviour
         galleryInstance.GetComponentInChildren<WeatherEffectController>()
         ?.ShowWeather(currentMain);
 
-        // ③ 朝向摄像机：入口朝向用户
+        // Facing the camera: The entrance faces the user
         Vector3 camPos = Camera.main.transform.position;
         Vector3 fwd = (camPos - hitPose.position); fwd.y = 0;
         if (fwd.sqrMagnitude < 0.001f) fwd = Vector3.forward;
         galleryInstance.transform.rotation = Quaternion.LookRotation(-fwd.normalized, Vector3.up);
 
-        // ④ 把 EntranceAnchor 对准点击位置
+        // Align the EntranceAnchor with the click position
         Vector3 offset = hitPose.position - entranceAnchor.position;
         galleryInstance.transform.position += offset;
 
-        // ⑤ 加载天气关键词并展示展品
+        // Load the weather keywords and display the exhibits
         string kw = PlayerPrefs.GetString("WeatherKeyword", "sun");
-        if (vaManager)      StartCoroutine(vaManager.LoadWeatherGallery(kw));
+        if (vaManager) StartCoroutine(vaManager.LoadWeatherGallery(kw));
         if (harvardManager) StartCoroutine(harvardManager.LoadWeatherGallery(kw));
 
-        // ✅ ⑥ 放置完毕后隐藏辅助平面点
+        // After placement, hide the auxiliary plane points.
         ARPlaneManager planeManager = FindObjectOfType<ARPlaneManager>();
         if (planeManager != null)
         {
             foreach (var plane in planeManager.trackables)
-            // 关闭已有 plane
-            plane.gameObject.SetActive(false); 
-            planeManager.enabled = false;             // 停止后续识别
-    }
+                // Close the existing plane
+                plane.gameObject.SetActive(false);
+            planeManager.enabled = false;             // Stop subsequent recognition
+        }
 
-        // ⑥ 放置完毕，禁用脚本
+        // Placement completed. Disable the script.
         enabled = false;
     }
 }

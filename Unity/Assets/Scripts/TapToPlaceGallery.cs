@@ -1,7 +1,7 @@
 using System.Collections; 
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;            // 新输入系统
+using UnityEngine.InputSystem;         
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
 
@@ -9,18 +9,18 @@ using UnityEngine.XR.ARSubsystems;
 public class TapToPlaceGallery : MonoBehaviour
 {
     [Header("Prefabs & refs")]
-    public GameObject galleryPrefab;          // 拖 ArtGallery 预制体
+    public GameObject galleryPrefab;          // Drag the ArtGallery prefab
     public Transform xrOrigin;               // XR Origin (Mobile AR)
-    public float holdSeconds = 0.4f;          // 长按判定时间
+    public float holdSeconds = 0.2f;          // Long press to trigger model placement
 
     ARRaycastManager raycaster;
     GameObject galleryInstance;
-    Transform  entranceAnchor;                // 运行时缓存
+    Transform  entranceAnchor;                // User perspective starting point
 
     float pressTime;
     static readonly List<ARRaycastHit> hits = new();
 
-    // ✅ 添加：用于获取场景里的 GalleryManager 脚本
+    // Used to obtain the GalleryManager script in the scene
     public GalleryManagerVA       vaManager;
     public GalleryManagerHarvard  harvardManager;
 
@@ -28,7 +28,7 @@ public class TapToPlaceGallery : MonoBehaviour
 
     void Update()
     {
-        // 没放之前，每帧检测长按
+        // Before placing the model, each frame was detected by long press.
         if (galleryInstance) return;
 
         if (Touchscreen.current.primaryTouch.press.isPressed)
@@ -44,53 +44,52 @@ public class TapToPlaceGallery : MonoBehaviour
         }
         else
         {
-            pressTime = 0;    // 手指抬起，计时归零
+            pressTime = 0;    // When the finger is lifted, the timer resets to zero.
         }
     }
 
     void PlaceGallery(Pose hitPose)
     {
-        // ① 先实例化
+        // Instantiate the model first
         galleryInstance = Instantiate(galleryPrefab, hitPose.position, Quaternion.identity);
 
-        // ② 找入口锚点
+        // Find the entrance (User perspective starting point)
         entranceAnchor = galleryInstance.transform.Find("EntranceAnchor");
         if (!entranceAnchor)
         {
-            Debug.LogError("EntranceAnchor 未找到！");
+            Debug.LogError("Cannot find the EntranceAnchor!");
             return;
         }
 
-        /* ③ 让 EntranceAnchor 落到点击位置，且正对摄像机 */
-        //   ▸ 把场馆旋转到“入口朝向 → 摄像机”
+        // Make the EntranceAnchor position itself at the click location and face the camera directly.
+        // Rotate the gallery to "entrance facing → camera"
         Vector3 camPos = Camera.main.transform.position;
         Vector3 fwd    = (camPos - hitPose.position); fwd.y = 0;
         if (fwd.sqrMagnitude < 0.001f) fwd = Vector3.forward;
         galleryInstance.transform.rotation = Quaternion.LookRotation(-fwd.normalized, Vector3.up);
 
-        //   ▸ 再把整体平移，使 EntranceAnchor 世界坐标 = hitPose.position
+        // Then perform an overall translation so that the world coordinates of EntranceAnchor = hitPose.position
         Vector3 offset = hitPose.position - entranceAnchor.position;
         galleryInstance.transform.position += offset;
 
-         // ✅ 添加：找到场景里的 GalleryManager 脚本并调用 ReloadGallery()
+         // Locate the GalleryManager script in the scene and call the ReloadGallery() function
         if (vaManager)      vaManager.ReloadGallery();
         if (harvardManager) harvardManager.ReloadGallery(); 
         else
         {
-            Debug.LogError("❌ 场景中未找到 GalleryManager 脚本！");
+            Debug.LogError("Cannot find the GalleryManager.cs!");
         }
 
-        // ✅ ⑥ 放置完毕后隐藏辅助平面点
+        // After placing the model, hide the plane points.
         ARPlaneManager planeManager = FindObjectOfType<ARPlaneManager>();
         if (planeManager != null)
         {
             foreach (var plane in planeManager.trackables)
-            // 关闭已有 plane
             plane.gameObject.SetActive(false); 
-            planeManager.enabled = false;             // 停止后续识别
+            planeManager.enabled = false;             // Stop the subsequent recognition
             }
             
-        // ④ 放好后禁用脚本避免重复放置
+        // After placing the gallery model, disable the script to avoid repeated placement.
         enabled = false;
     }
 }

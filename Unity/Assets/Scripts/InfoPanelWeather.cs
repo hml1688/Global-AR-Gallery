@@ -4,46 +4,43 @@ using UnityEngine.UI;
 using UnityEngine.Networking;
 using TMPro;
 
-/// <summary>
-/// WeatherGalleryScene 专用信息面板：
-/// 仅显示作品图片、标题与来源博物馆
-/// </summary>
+// WeatherGalleryScene-specific information panel: Displays only the work images, titles, and the source museum.
 public class InfoPanelWeather : MonoBehaviour
 {
     [Header("UI References")]
-    public GameObject      canvasRoot;     // 整个面板的根，用于显隐
-    public RawImage        img;            // 图片
-    public AspectRatioFitter fitter;       // 让图片自适应宽高比
-    public TextMeshProUGUI titleValue;     // 作品标题
-    public TextMeshProUGUI museumValue;    // 来源博物馆
-    public TextMeshProUGUI loadingHint;    // “Loading…” 提示（可选）
+    public GameObject canvasRoot;     // Root canvas for toggling visibility
+    public RawImage img;            // UI image component for artwork
+    public AspectRatioFitter fitter;       // Maintains aspect ratio of image
+    public TextMeshProUGUI titleValue;     // Artwork title text field
+    public TextMeshProUGUI museumValue;    // Text field showing the museum name
+    public TextMeshProUGUI loadingHint;    // Optional "Loading..." hint text
 
-    /* -------- 单例存储 -------- */
+    // Singleton instance for easy static access
     static InfoPanelWeather inst;
     void Awake() => inst = this;
 
-    /* -------- 对外调用接口 -------- */
+    // Public entry point for showing the weather info panel
     public static void Show(ArtFrame f)
     {
         if (inst != null) inst.StartCoroutine(inst.ShowRoutine(f));
     }
 
-    /* -------- 显示协程 -------- */
+    // Coroutine for downloading and displaying high-res image and metadata
     IEnumerator ShowRoutine(ArtFrame f)
     {
         canvasRoot.SetActive(true);
         if (loadingHint) loadingHint.gameObject.SetActive(true);
         img.texture = null;
 
-        /* 标题与来源 */
-        titleValue.text  = f.title;
+        // Populate artwork metadata
+        titleValue.text = f.title;
         museumValue.text = f.gameObject.CompareTag("ArtFrameHarvard")
                            ? "Harvard Art Museums"
                            : "V&A Museum";
 
-        /* ▲ 若后期还有其他馆，可再加 Tag 判断 */
+        // Future: Add tag detection for more museums if needed
 
-        /* —— 下载高清纹理（或使用缓存） —— */
+        // Download high-resolution image (if not already cached)
         if (f.hiTex == null)
         {
             using UnityWebRequest req = UnityWebRequestTexture.GetTexture(f.hiResUrl);
@@ -52,7 +49,7 @@ public class InfoPanelWeather : MonoBehaviour
                 f.hiTex = DownloadHandlerTexture.GetContent(req);
         }
 
-        /* —— 应用纹理 + 适配宽高比 —— */
+        // Apply texture and maintain correct aspect ratio
         if (f.hiTex)
         {
             img.texture = f.hiTex;
@@ -62,6 +59,6 @@ public class InfoPanelWeather : MonoBehaviour
         if (loadingHint) loadingHint.gameObject.SetActive(false);
     }
 
-    /* -------- 关闭按钮回调 -------- */
+    // Close the panel via UI button
     public void Hide() => canvasRoot.SetActive(false);
 }
